@@ -179,7 +179,7 @@ class Dash(commands.Cog):
             await self.bot.get_channel(843016447839567912).send(
                 f"Dash.Update(): Started!"
             )
-            Inspected = Inspect()
+            Inspected = await Inspect()
             for i, Status in enumerate(Inspected):
                 if Status > 0:
                     Base = TeamSkeetSites[i]
