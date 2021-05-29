@@ -1,12 +1,12 @@
 from flask import Flask
 from threading import Thread
 
-App = Flask('')
+App = Flask("")
 
 
-@App.route('/')
+@App.route("/")
 def Home():
-    return "<01000010><01100001><01100010><01111001>"
+    return "<01000110><01110010><01101001><01100100><01100001><01111001>"
 
 
 def Run():
