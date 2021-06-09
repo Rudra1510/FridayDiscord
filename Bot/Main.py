@@ -2,7 +2,7 @@ import os
 from discord.ext import commands
 from WebServer import StayAwake
 
-SpaceBot = commands.Bot(command_prefix=".")
+SpaceBot = commands.Bot(command_prefix=".", description="I'm Friday.")
 
 for File in os.listdir("./Bot/Extension"):
     if File.endswith(".py"):

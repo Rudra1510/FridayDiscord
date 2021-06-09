@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+import time
 
 import discord
 from discord.ext import commands
@@ -176,9 +177,7 @@ class Dash(commands.Cog):
         Admin = await self.bot.fetch_user(529251441504681994)
 
         try:
-            await self.bot.get_channel(843016447839567912).send(
-                f"Dash.Update(): Started!"
-            )
+            start = time.time()
             Inspected = await Inspect()
             for i, Status in enumerate(Inspected):
                 if Status > 0:
@@ -217,7 +216,7 @@ class Dash(commands.Cog):
                             time.sleep(1)
 
             await self.bot.get_channel(843016447839567912).send(
-                f"Dash.Update(): Stopped!"
+                f"Dash.Update(): Done in {round(time.time() - start)} seconds."
             )
 
         except Exception as e:

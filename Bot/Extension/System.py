@@ -1,4 +1,5 @@
 import os
+import discord
 from Extension.Dash import Dash
 from discord.ext import commands
 
@@ -12,7 +13,10 @@ class System(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        await self.Bot.get_channel(843016447839567912).send(f"^-^")
+        await self.Bot.change_presence(
+            activity=discord.Game(name=".help"),
+        )
+        await self.Bot.get_channel(843016447839567912).send(f"Booting Up.")
         Dash(self.Bot).Update.start()
 
     @commands.command()
@@ -24,7 +28,7 @@ class System(commands.Cog):
             for i in range(int(Value)):
                 await ctx.channel.send(Text)
         else:
-            await ctx.channel.send(Value + " " + Text)
+            await ctx.channel.send(Value, Text)
 
     @commands.command()
     async def ping(self, ctx):
