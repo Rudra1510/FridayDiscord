@@ -1,55 +1,4 @@
 """
-#Teamskeet
-    SisLovesMe
-    FamilyStrokes
-    PervMom
-    FosterTapes
-    Shoplyfter
-    BFFS
-    DaughterSwap
-    DadCrush
-    Submissived
-    Thickumz
-    NotMyGrandPa
-    FreeUseFantasy
-    PervDoctor
-
-#MYLF
-    PervMom
-    PervNana
-    ShoplyfterMYLF
-    FosterTapes
-    MYLFDOM
-    BBCParadise
-    BadMilfs
-    AnalMom
-    MomSwap
-
-#Selected
-    
-    #Running
-
-        SisLovesMe     sis --- si
-        FamilyStrokes  fs
-        PervMom        pm
-        DaughterSwap   ds
-        AnalMom        am
-        FreeUseFantasy fuf --- fu
-    
-    #To Add
-
-        DadCrush       dc
-        PervNana       pn
-        ShoplyfterMYLF sl
-        MYLFDOM        md
-        BBCParadise    bb
-        BadMilfs       bm
-        
-        #Not Supported Yet
-            Submissived    su
-            MomSwap        ms
-            PervDoctor     pd
-
 Data = {
     "AbusiveInput": [
         "chod",
@@ -91,18 +40,15 @@ Data = {
 
 import os
 import bs4
+import time
 import random
 import requests
+import replitdb
 import youtube_dl
-import time
-from Functions.ReplitDB import Client
 import pyshorteners
-
 from selenium import webdriver
-from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 
 
@@ -117,11 +63,14 @@ Cata = {
     "ds": {"Base": "DaughterSwap", "Color": 39385},
     "fs": {"Base": "FamilyStrokes", "Color": 3830853},
     "ff": {"Base": "FreeUseFantasy", "Color": 16761856},
+    "fm": {"Base": "FreeUseMilf", "Color": 0xFFC400},
+    "ms": {"Base": "MomSwap", "Color": 0x00D387},
     "md": {"Base": "MYLFDOM", "Color": 16731942},
     "pm": {"Base": "PervMom", "Color": 13698310},
     "pn": {"Base": "PervNana", "Color": 13698310},
     "sl": {"Base": "ShoplyfterMYLF", "Color": 14486850},
     "si": {"Base": "SisLovesMe", "Color": 15745132},
+    "ss": {"Base": "SisSwap", "Color": 0xF456E9},
     "tt": {"Base": "TeamSkeetTube", "Color": 636990},
     "zz": {"Base": "Brazzers", "Color": 14725667},
     "tr": {"Base": "TeamSkeetTubeRandom", "Color": 636990},
@@ -135,11 +84,14 @@ Uata = {
     "DaughterSwap": 39385,
     "FamilyStrokes": 3830853,
     "FreeUseFantasy": 16761856,
+    "FreeUseMilf": 0xFFC400,
+    "MomSwap": 0x00D387,
     "MYLFDOM": 16731942,
     "PervMom": 13698310,
     "PervNana": 13698310,
     "ShoplyfterMYLF": 14486850,
     "SisLovesMe": 15745132,
+    "SisSwap": 0xF456E9,
     "TeamSkeetTube": 636990,
     "TeamSkeetTubeRandom": 636990,
 }
@@ -151,12 +103,32 @@ TeamSkeetSites = [
     "DaughterSwap",
     "FamilyStrokes",
     "FreeUseFantasy",
+    "FreeUseMilf",
+    "MomSwap",
     "MYLFDOM",
     "PervMom",
     "PervNana",
     "ShoplyfterMYLF",
     "SisLovesMe",
-    "TeamSkeetTube",
+    "SisSwap" "TeamSkeetTube",
+]
+ThresholdValues = [
+    "Ass For Pass",
+    "Car Trouble",
+    "Makeout Tips For Mom",
+    "Sabotaging Stepdad's Relationship",
+    "Extra Love From Stepdaughters",
+    "Big Bet",
+    "Home Alone with Step Bro",
+    "The Good Ol' Days",
+    "No Tramps Allowed",
+    "Leather And Lust",
+    "A Stepson's Wet Dream",
+    "Staying with Nana",
+    "Case No. 6615370 - Anti-Masker Thief",
+    "Comforting My Stepsis",
+    "Getting Lucky With Stepsis",
+    "Case No. 7906147",
 ]
 RandomSites = ["Brazzers", "TeamSkeetTubeRandom"]
 
@@ -225,27 +197,33 @@ class Download:
             Source = Artilcle["href"]
             if "redgifs.com" in Source:
                 return Source
+            elif "gyfcat.com" in Source:
+                return Source.replace("gyfcat.com", "redgifs.com/watch")
 
     def RedGifs(self, URL):
+        if "gyfcat.com" in URL:
+            URL = URL.replace("gyfcat.com", "redgifs.com/watch")
+
         op = webdriver.ChromeOptions()
         op.add_argument("--no-sandbox")
         op.add_argument("--disable-dev-shm-usage")
-        # op.add_argument("--headless")
+        op.add_argument("--headless")
 
-        with webdriver.Chrome(chrome_options=op) as driver:
-            driver.get(URL)
-            WebDriverWait(driver, 10).until(
+        with webdriver.Chrome(chrome_options=op) as Driver:
+            Driver.get(URL)
+            WebDriverWait(Driver, 10).until(
                 presence_of_element_located((By.TAG_NAME, "source"))
             )
-            r = driver.page_source
+            r = Driver.page_source
 
+        Term = URL.split("/")[-1]
         soup = bs4.BeautifulSoup(r, "html.parser")
         sources = soup.find_all("source")
         for source in sources:
             try:
                 found = source["src"]
-                if "mobile" not in found:
-                    return found
+                if Term in found.lower():
+                    return found.replace("-mobile", "")
             except KeyError:
                 pass
 
@@ -340,13 +318,16 @@ class Download:
 
 class DB:
     def __init__(self):
-        self.client = Client()
+        self.client = replitdb.Client()
 
     async def Pull(self, Key):
         return await self.client.view(Key)
 
     async def Push(self, Key, Value):
         await self.client.set_dict({Key: Value})
+
+    async def Delete(self, Key):
+        self.client.remove(Key)
 
 
 class Parser:
@@ -403,26 +384,32 @@ class Parser:
         ]
 
     def TeamSkeetTubeRandom(self, Number=1):
+        BackEnds = [
+            "anal-mom",
+            "bad-milfs",
+            "bbc-paradise",
+            "bffs",
+            "dad-crush",
+            "daughter-swap",
+            "family-strokes",
+            "foster-tapes",
+            "freeuse-fantasy",
+            "full-of-joi",
+            "ginger-patch",
+            "got-mylf",
+            "lone-milf",
+            "milf-body",
+            "milfty",
+            "mom-drips",
+            "perv-mom",
+            "perv-nana",
+            "shoplyfter-mylf",
+            "submissived",
+            "the-real-workout",
+            "thickumz",
+        ]
         Categories = [
-            "https://www.teamskeettube.com/video/category/anal-mom/",
-            "https://www.teamskeettube.com/video/category/bad-milfs/",
-            "https://www.teamskeettube.com/video/category/bbc-paradise/",
-            "https://www.teamskeettube.com/video/category/bffs/",
-            "https://www.teamskeettube.com/video/category/dad-crush/",
-            "https://www.teamskeettube.com/video/category/daughter-swap/",
-            "https://www.teamskeettube.com/video/category/family-strokes/",
-            "https://www.teamskeettube.com/video/category/foster-tapes/",
-            "https://www.teamskeettube.com/video/category/ginger-patch/",
-            "https://www.teamskeettube.com/video/category/got-mylf/",
-            "https://www.teamskeettube.com/video/category/milf-body/",
-            "https://www.teamskeettube.com/video/category/milfty/",
-            "https://www.teamskeettube.com/video/category/mom-drips/",
-            "https://www.teamskeettube.com/video/category/perv-mom/",
-            "https://www.teamskeettube.com/video/category/perv-nana//",
-            "https://www.teamskeettube.com/video/category/shoplyfter-mylf/",
-            "https://www.teamskeettube.com/video/category/submissived/",
-            "https://www.teamskeettube.com/video/category/the-real-workout/",
-            "https://www.teamskeettube.com/video/category/thickumz/",
+            f"https://www.teamskeettube.com/video/category/{Back}/" for Back in BackEnds
         ]
         Category = random.choice(Categories)
 
@@ -502,14 +489,12 @@ class Parser:
             except Exception as e:
                 Videos.append(type(e).__name__)
 
-            Daftsex = [
-                f"https://daftsex.com/video/" + T.strip().replace(" ", "%20")
-                for T in Title
-            ]
-            Biqle = [
-                f"https://Biqle.com/video/" + T.strip().replace(" ", "%20")
-                for T in Title
-            ]
+        Daftsex = [
+            f"https://daftsex.com/video/" + T.strip().replace(" ", "%20") for T in Title
+        ]
+        Biqle = [
+            f"https://Biqle.com/video/" + T.strip().replace(" ", "%20") for T in Title
+        ]
 
         return [
             Title[:Number],
@@ -612,4 +597,4 @@ def Get(Site, Number=1):
             return Parser().TeamSkeet(Site, Number)
 
     except Exception as e:
-        return f"File :{os.path.basename(__file__)} | Error :{type(e).__name__}"
+        return f"{Site}: {type(e).__name__}"
