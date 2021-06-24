@@ -30,6 +30,7 @@ import re
 import os
 import asyncio
 import discord
+from Extension.Dash import Dash
 from discord.ext import commands
 
 # Utility

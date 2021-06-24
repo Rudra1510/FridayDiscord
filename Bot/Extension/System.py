@@ -39,7 +39,7 @@ class System(commands.Cog):
         Target = self.Bot.get_channel(843016447839567912)
         await self.Bot.change_presence(activity=Game)
         await Respond(Target, "Booting Up.", True)
-        # Dash(self.Bot).Update.start()
+        Dash(self.Bot).Update.start()
 
     @commands.command(aliases=["ext"])
     async def extension(self, ctx, Function="", Extension=""):

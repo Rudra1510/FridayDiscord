@@ -70,7 +70,7 @@ Cata = {
     "pn": {"Base": "PervNana", "Color": 13698310},
     "sl": {"Base": "ShoplyfterMYLF", "Color": 14486850},
     "si": {"Base": "SisLovesMe", "Color": 15745132},
-    "ss": {"Base": "SisSwap", "Color": 0xF456E9},
+    # "ss": {"Base": "SisSwap", "Color": 0xF456E9},
     "tt": {"Base": "TeamSkeetTube", "Color": 636990},
     "zz": {"Base": "Brazzers", "Color": 14725667},
     "tr": {"Base": "TeamSkeetTubeRandom", "Color": 636990},
@@ -91,7 +91,7 @@ Uata = {
     "PervNana": 13698310,
     "ShoplyfterMYLF": 14486850,
     "SisLovesMe": 15745132,
-    "SisSwap": 0xF456E9,
+    # "SisSwap": 0xF456E9,
     "TeamSkeetTube": 636990,
     "TeamSkeetTubeRandom": 636990,
 }
@@ -110,7 +110,8 @@ TeamSkeetSites = [
     "PervNana",
     "ShoplyfterMYLF",
     "SisLovesMe",
-    "SisSwap" "TeamSkeetTube",
+    # "SisSwap",
+    "TeamSkeetTube",
 ]
 ThresholdValues = [
     "Ass For Pass",
