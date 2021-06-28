@@ -177,7 +177,7 @@ class Dash(commands.Cog):
                 return await Respond(ctx, HelpMessage)
 
             if Function.lower() == "pull":
-                Payload = await DB().Pull(Key)
+                Payload = DB().Pull(Key)
                 if Payload == None:
                     await ctx.message.add_reaction("\u274C")  # Wrong
                     Payload = f"No key found as [**{Key}**]"
@@ -187,12 +187,12 @@ class Dash(commands.Cog):
                     return await Respond(ctx, Payload)
 
             elif Function.lower() == "push":
-                await DB().Push(Key, Value)
+                DB().Push(Key, Value)
                 await ctx.message.add_reaction("\u2705")  # Right
                 return await Respond(ctx, f"Added: \n{Key}:{Value}")
 
             elif Function.lower() == "delete":
-                await DB().Delete(Key)
+                DB().Delete(Key)
                 await ctx.message.add_reaction("\u2705")  # Right
                 return await Respond(ctx, f"Deleted: {Key}")
 

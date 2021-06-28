@@ -41,6 +41,7 @@ Data = {
 import os
 import bs4
 import time
+import json
 import random
 import requests
 import replitdb
@@ -317,18 +318,39 @@ class Download:
         return "Tweet.jpeg"
 
 
+# class DB:
+#     def __init__(self):
+#         self.client = replitdb.Client()
+
+#     async def Pull(self, Key):
+#         return await self.client.view(Key)
+
+#     async def Push(self, Key, Value):
+#         await self.client.set_dict({Key: Value})
+
+#     async def Delete(self, Key):
+#         self.client.remove(Key)
+
+
 class DB:
     def __init__(self):
-        self.client = replitdb.Client()
+        self.File = "Bot/Functions/Data.json"
+        with open(self.File, "r") as f:
+            self.Data = json.loads(f.read())
 
-    async def Pull(self, Key):
-        return await self.client.view(Key)
+    def Pull(self, Key):
+        return self.Data["Data"][Key]
 
-    async def Push(self, Key, Value):
-        await self.client.set_dict({Key: Value})
+    def Push(self, Key, Value):
+        self.Data["Data"][Key] = Value
+        with open(self.File, "w") as f:
+            json.dump(self.Data, f)
 
-    async def Delete(self, Key):
-        self.client.remove(Key)
+    def Delete(self,Key):
+        del self.Data["Data"][Key]
+
+    def List(self):
+        return str(self.Data)
 
 
 class Parser:
@@ -570,11 +592,11 @@ async def Inspect():
                 )
             ]
 
-        Stored = await DB().Pull(Base)
+        Stored = DB().Pull(Base)
 
         for i in range(len(Titles)):
             if Stored == Titles[i]:
-                await DB().Push(Base, Titles[0])
+                DB().Push(Base, Titles[0])
                 break
         if i + 1 == len(Titles):
             Inspected.append(0)
