@@ -1,6 +1,3 @@
-import time
-import asyncio
-from warnings import resetwarnings
 from Imports import *
 
 
@@ -144,8 +141,8 @@ class Dash(commands.Cog):
             embed.add_field(name="Links", value=Links, inline=False)
             embed.set_image(url=Images[i])
             embed.set_footer(text=os.path.basename(__file__))
-            await Respond(Target, embed, True, True)
-            await Respond(Target, Videos[i], True, False)
+            await Target.send(embed=embed)
+            await Target.send(Videos[i])
 
     async def Sending(self, ctx, Category, Number):
         Base = Cata[Category]["Base"]
