@@ -15,18 +15,39 @@ async def Respond(Target, Payload, Send=False, Embed=False):
 
 
 async def Role(ctx, Check=["Admin", "Developer"]):
-    Roles = [Role.name for Role in ctx.author.roles]
-    RolesInt = len(set(Roles).intersection(Check))
-    if RolesInt < 1:
+    try:
+        Roles = [Role.name for Role in ctx.author.roles]
+        RolesInt = len(set(Roles).intersection(Check))
+        if RolesInt < 1:
+            await ctx.message.add_reaction("\u274C")  # Wrong
+            Payload = f"Unauthorized Access Denied."
+            Current = await Respond(ctx, Payload)
+            await asyncio.sleep(3)
+            await Current.delete()
+            await ctx.message.delete()
+            return None
+        else:
+            return True
+    except AttributeError:
+        Whitelist = [529251441504681994]
+        if ctx.author.id in Whitelist:
+            return True
+        else:
+            await ctx.message.add_reaction("\u274C")  # Wrong
+            Payload = f"Unauthorized Access Denied."
+            Current = await Respond(ctx, Payload)
+            await asyncio.sleep(3)
+            await Current.delete()
+            await ctx.message.delete()
+            return None
+    except Exception as e:
         await ctx.message.add_reaction("\u274C")  # Wrong
-        Payload = f"Unauthorized Access Denied."
+        Payload = f"Roles(): {type(e).__name__}"
         Current = await Respond(ctx, Payload)
         await asyncio.sleep(3)
         await Current.delete()
         await ctx.message.delete()
         return None
-    else:
-        return True
 
 
 class Message(commands.Cog):
@@ -163,7 +184,7 @@ class Dash(commands.Cog):
             return ctx.message.delete()
 
         try:
-            Functions = ["delete", "pull", "push"]
+            Functions = ["delete", "pull", "push", "list"]
             HelpMessage = (
                 f"```.DB <Function> <Key> <Value=None>\nFunction={str(Functions)}```"
             )
@@ -195,6 +216,14 @@ class Dash(commands.Cog):
                 DB().Delete(Key)
                 await ctx.message.add_reaction("\u2705")  # Right
                 return await Respond(ctx, f"Deleted: {Key}")
+
+            elif Function.lower() == "list":
+                String = DB().List()
+                Payload = discord.Embed(
+                    title="Database", description=String, color=ctx.author.color
+                )
+                await ctx.message.add_reaction("\u2705")  # Right
+                return await Respond(ctx, Payload, False, True)
 
         except Exception as e:
             Payload = f"Dash.DB(): {type(e).__name__}"
@@ -284,6 +313,10 @@ class Dash(commands.Cog):
         Logs = self.bot.get_channel(843016447839567912)
 
         try:
+            Payload = (
+                "Dash.Update(): Started.\n[This Message will be edited when completed.]"
+            )
+            Current = await Respond(Logs, Payload, True, False)
             start = time.time()
             Inspected = await Inspect()
             for i, Status in enumerate(Inspected):
@@ -299,8 +332,7 @@ class Dash(commands.Cog):
                         await self.Dash(Admin, Color, Data)
 
             Payload = f"Dash.Update(): Done in {round(time.time() - start)} seconds."
-            await Logs.send(Payload)
-            await Respond(Logs, Payload, True, False)
+            await Current.edit(content=Payload)
 
         except Exception as e:
             await Respond(Admin, f"Dash.Update(): {type(e).__name__}", True)

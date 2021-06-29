@@ -318,20 +318,6 @@ class Download:
         return "Tweet.jpeg"
 
 
-# class DB:
-#     def __init__(self):
-#         self.client = replitdb.Client()
-
-#     async def Pull(self, Key):
-#         return await self.client.view(Key)
-
-#     async def Push(self, Key, Value):
-#         await self.client.set_dict({Key: Value})
-
-#     async def Delete(self, Key):
-#         self.client.remove(Key)
-
-
 class DB:
     def __init__(self):
         self.File = "Bot/Functions/Data.json"
@@ -346,11 +332,16 @@ class DB:
         with open(self.File, "w") as f:
             json.dump(self.Data, f)
 
-    def Delete(self,Key):
+    def Delete(self, Key):
         del self.Data["Data"][Key]
+        with open(self.File, "w") as f:
+            json.dump(self.Data, f)
 
     def List(self):
-        return str(self.Data)
+        Keys = [_ for _ in self.Data["Data"]]
+        Values = [self.Pull(Key) for Key in Keys]
+        String = "\n".join([f"{K}:{V}" for K, V in zip(Keys, Values)])
+        return String
 
 
 class Parser:

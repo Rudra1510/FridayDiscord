@@ -298,7 +298,7 @@ class Information(commands.Cog):
         finally:
             await Respond(ctx, Payload, False, True)
 
-    @commands.command()
+    @commands.command(aliases=["av"])
     async def avatar(self, ctx, *, User: discord.Member = None):
         try:
             if User is None:
