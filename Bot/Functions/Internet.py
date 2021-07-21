@@ -42,7 +42,9 @@ import os
 import bs4
 import time
 import json
+import shutil
 import random
+import img2pdf
 import requests
 import replitdb
 import youtube_dl
@@ -317,6 +319,87 @@ class Download:
 
         return "Tweet.jpeg"
 
+    def AllPC(self, URL, PDF):
+        if PDF == True:
+            r = requests.get(URL, headers=headers)
+            Soup = bs4.BeautifulSoup(r.content, "html.parser")
+            Wrapper = Soup.find("div", attrs={"class": "reading-content"})
+            Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
+
+            Folder = URL.split("/")[-2]
+
+            if os.path.isdir(Folder) == True:
+                if len(os.listdir(Folder)) == 0:
+                    pass
+                else:
+                    shutil.rmtree(Folder)
+                    os.mkdir(Folder)
+            elif os.path.isdir(Folder) == False:
+                os.mkdir(Folder)
+
+            for i, Image in enumerate(Data):
+                Ext = Image.split(".")[-1]
+                File = f"{Folder}/{str(i).zfill(3)}.{Ext}"
+
+                r = requests.get(Image)
+                with open(File, "wb") as F:
+                    F.write(r.content)
+
+            Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
+            with open(f"{Folder}.pdf", "wb") as f:
+                f.write(img2pdf.convert(Images))
+
+            shutil.rmtree(Folder)
+
+            return f"{Folder}.pdf"
+
+        elif PDF == False:
+            r = requests.get(URL, headers=headers)
+            Soup = bs4.BeautifulSoup(r.content, "html.parser")
+            Wrapper = Soup.find("div", attrs={"class": "reading-content"})
+            Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
+            return Data
+
+    def HDPC(self, URL, PDF):
+        if PDF == True:
+            r = requests.get(URL, headers=headers)
+            Soup = bs4.BeautifulSoup(r.content, "html.parser")
+            Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
+            Data = [Var["href"] for Var in Wrapper]
+
+            Folder = URL.split("/")[-2]
+
+            if os.path.isdir(Folder) == True:
+                if len(os.listdir(Folder)) == 0:
+                    pass
+                else:
+                    shutil.rmtree(Folder)
+                    os.mkdir(Folder)
+            elif os.path.isdir(Folder) == False:
+                os.mkdir(Folder)
+
+            for i, Image in enumerate(Data):
+                Ext = Image.split(".")[-1]
+                File = f"{Folder}/{str(i).zfill(3)}.{Ext}"
+
+                r = requests.get(Image)
+                with open(File, "wb") as F:
+                    F.write(r.content)
+
+            Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
+            with open(f"{Folder}.pdf", "wb") as f:
+                f.write(img2pdf.convert(Images))
+
+            shutil.rmtree(Folder)
+
+            return f"{Folder}.pdf"
+        elif PDF == False:
+            r = requests.get(URL, headers=headers)
+            Soup = bs4.BeautifulSoup(r.content, "html.parser")
+            Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
+            Data = [Var["href"] for Var in Wrapper]
+            return Data
+
 
 class DB:
     def __init__(self):
@@ -325,20 +408,20 @@ class DB:
             self.Data = json.loads(f.read())
 
     def Pull(self, Key):
-        return self.Data["Data"][Key]
+        return self.Data[Key]
 
     def Push(self, Key, Value):
-        self.Data["Data"][Key] = Value
+        self.Data[Key] = Value
         with open(self.File, "w") as f:
             json.dump(self.Data, f)
 
     def Delete(self, Key):
-        del self.Data["Data"][Key]
+        del self.Data[Key]
         with open(self.File, "w") as f:
             json.dump(self.Data, f)
 
     def List(self):
-        Keys = [_ for _ in self.Data["Data"]]
+        Keys = [_ for _ in self.Data]
         Values = [self.Pull(Key) for Key in Keys]
         String = "\n".join([f"{K}:{V}" for K, V in zip(Keys, Values)])
         return String

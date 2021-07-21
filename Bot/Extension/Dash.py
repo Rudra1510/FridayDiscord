@@ -136,6 +136,36 @@ class Message(commands.Cog):
                 Payload = f"Message.Incestflix(): {type(e).__name__}"
                 await message.author.send(Payload)
 
+        elif "allporncomic.com" in message.content.lower():
+            if "pdf" in message.content.lower():
+                Data = Download().AllPC(message.content.split()[0], True)
+                await message.author.send(file=discord.File(Data))
+                os.remove(Data)
+
+            else:
+                Data = Download().AllPC(message.content.lower(), False)
+                Length = len(Data)
+                for _ in Data:
+                    await message.channel.send(_)
+                await message.channel.send(
+                    f"**Type ||.purge {Length+1}|| to clear this.**"
+                )
+
+        elif "hdporncomics.com" in message.content.lower():
+            if "pdf" in message.content.lower():
+                Data = Download().HDPC(message.content.split()[0], True)
+                await message.author.send(file=discord.File(Data))
+                os.remove(Data)
+
+            else:
+                Data = Download().HDPC(message.content.lower(), False)
+                Length = len(Data)
+                for _ in Data:
+                    await message.channel.send(_)
+                await message.channel.send(
+                    f"**Type ||.purge {Length+1}|| to clear this.**"
+                )
+
 
 class Dash(commands.Cog):
     def __init__(self, bot):
@@ -184,46 +214,66 @@ class Dash(commands.Cog):
             return ctx.message.delete()
 
         try:
-            Functions = ["delete", "pull", "push", "list"]
+            NoArg = ["list", "json"]
+            OneArg = ["pull", "delete"]
+            TwoArg = ["push"]
+            Functions = NoArg + OneArg + TwoArg
             HelpMessage = (
-                f"```.DB <Function> <Key> <Value=None>\nFunction={str(Functions)}```"
+                f"```.DB <Function> <Key> <Value>\n-----\nFunction={str(Functions)}```"
             )
 
-            if Function == None or Key == None:
+            if Function == None:  # or Key == None:
                 await ctx.message.add_reaction("\u274C")  # Wrong
                 return await Respond(ctx, HelpMessage)
 
-            if Function.lower() not in Functions:
+            elif Function.lower() not in Functions:
                 await ctx.message.add_reaction("\u274C")  # Wrong
                 return await Respond(ctx, HelpMessage)
 
-            if Function.lower() == "pull":
-                Payload = DB().Pull(Key)
-                if Payload == None:
-                    await ctx.message.add_reaction("\u274C")  # Wrong
-                    Payload = f"No key found as [**{Key}**]"
-                    return await Respond(ctx, Payload)
-                else:
-                    await ctx.message.add_reaction("\u2705")  # Right
-                    return await Respond(ctx, Payload)
+            elif Function.lower() in Functions:
+                if Function.lower() in NoArg:
+                    if Function.lower() == "list":
+                        String = DB().List()
+                        Payload = discord.Embed(
+                            title="Database", description=String, color=ctx.author.color
+                        )
+                        await ctx.message.add_reaction("\u2705")  # Right
+                        return await Respond(ctx, Payload, False, True)
 
-            elif Function.lower() == "push":
-                DB().Push(Key, Value)
-                await ctx.message.add_reaction("\u2705")  # Right
-                return await Respond(ctx, f"Added: \n{Key}:{Value}")
+                    elif Function.lower() == "json":
+                        Payload = f"```JSON\n{DB().Data}```"
+                        await ctx.message.add_reaction("\u2705")  # Right
+                        return await Respond(ctx, Payload, True, False)
 
-            elif Function.lower() == "delete":
-                DB().Delete(Key)
-                await ctx.message.add_reaction("\u2705")  # Right
-                return await Respond(ctx, f"Deleted: {Key}")
+                elif Function.lower() in OneArg:
+                    if Key == None:
+                        await ctx.message.add_reaction("\u274C")  # Wrong
+                        return await Respond(ctx, HelpMessage)
+                    else:
+                        if Function.lower() == "pull":
+                            Payload = DB().Pull(Key)
+                            if Payload == None:
+                                await ctx.message.add_reaction("\u274C")  # Wrong
+                                Payload = f"No key found as [**{Key}**]"
+                                return await Respond(ctx, Payload)
+                            else:
+                                await ctx.message.add_reaction("\u2705")  # Right
+                                return await Respond(ctx, Payload)
 
-            elif Function.lower() == "list":
-                String = DB().List()
-                Payload = discord.Embed(
-                    title="Database", description=String, color=ctx.author.color
-                )
-                await ctx.message.add_reaction("\u2705")  # Right
-                return await Respond(ctx, Payload, False, True)
+                        elif Function.lower() == "delete":
+                            DB().Delete(Key)
+                            await ctx.message.add_reaction("\u2705")  # Right
+                            return await Respond(ctx, f"Deleted: {Key}")
+
+                elif Function.lower() in TwoArg:
+                    if Key == None or Value == None:
+                        await ctx.message.add_reaction("\u274C")  # Wrong
+                        return await Respond(ctx, HelpMessage)
+                    else:
+                        if Function.lower() == "push":
+                            DB().Push(Key, Value)
+                            await ctx.message.add_reaction("\u2705")  # Right
+                            return await Respond(ctx, f"Added: \n{Key}:{Value}")
 
         except Exception as e:
             Payload = f"Dash.DB(): {type(e).__name__}"
@@ -331,11 +381,107 @@ class Dash(commands.Cog):
                     else:
                         await self.Dash(Admin, Color, Data)
 
-            Payload = f"Dash.Update(): Done in {round(time.time() - start)} seconds."
+            Payload = f"Dash.Update(): **{sum(Inspected)} Updates** in {round(time.time() - start)} seconds."
             await Current.edit(content=Payload)
 
         except Exception as e:
             await Respond(Admin, f"Dash.Update(): {type(e).__name__}", True)
+
+    @commands.command()
+    async def SDDE(self, ctx):
+        Data = {
+            "330": [
+                "SDDE-330 Continuous Morning Sex Life And Cooking, Washing, Sexual Desire For 10 Sons",
+                "https://pornimg.xyz/2020/0318/1sdde330pl.jpg",
+            ],
+            "343": [
+                'SDDE-343 Homemaker Service "always Fuck"',
+                "https://pornimg.xyz/2020/0402/1sdde343pl.jpg",
+            ],
+            "352": [
+                "SDDE-352 Every Morning, Mom Hisa-dai Continuous Sex With 10 Sons While The Busy Housework (47)",
+                "https://pornimg.xyz/2018/1124/1sdde352pl.jpg",
+            ],
+            "360": [
+                "SDDE-360 Oma \u25cb Co Housekeeper Booty",
+                "https://pornimg.xyz/2020/0420/1sdde360pl.jpg",
+            ],
+            "372": [
+                'SDDE-372 Sperm Empty Morning Life In The "eldest Daughter, Second Daughter, Third Daughter, Four F-five Woman Lok Woman Mother Sexual Desire Processing My Role Of" Seven Consecutive Sex',
+                "https://pornimg.xyz/2020/0429/1sdde372pl.jpg",
+            ],
+            "389": [
+                "SDDE-389 Oma Nice Bottom Crew Pies Hospitality Cowgirl \u25cf Co Commuter Train",
+                "https://pornimg.xyz/2021/0124/1sdde389pl.jpg",
+            ],
+            "416": [
+                "SDDE-416 Continuous And Cooking, Washing, Sexual Desire Processing 10 Sons Sex Morning Life Tall Angrily Milk Mom Hen",
+                "https://pornimg.xyz/2020/0531/1sdde416pl.jpg",
+            ],
+            "450": [
+                "SDDE-450 Continuous And Cooking, Washing And Sexual Desire Processing 10 Sons SEX Morning Life Unequaled Masegaki Vs Gyarumama Hen AIKA",
+                "https://pornimg.xyz/2020/0626/1sdde450pl.jpg",
+            ],
+            "457": [
+                "SDDE-457 Man Who Can Stop Time Was Real!~ Happy That Her Proud Of The Guys \u201cIn O\u2019sleeping\u201d Saddle Defeated!Hen ~",
+                "https://pornimg.xyz/2020/0707/1sdde457pl.jpg",
+            ],
+            "511": [
+                "SDDE-511 Cooking \u00b7 Washing \u00b7 Libido Treatment 10 Son And Continuous Creampie Morning Living (38)",
+                "https://pornimg.xyz/2017/1013/1sdde511pl.jpg",
+            ],
+            "526": [
+                "SDDE-526 Cooking \u00b7 Washing \u00b7 Libido Processing Son & Relatives 15 Consecutive Sex Morning Life New Year Happy New Year Happy Incest Incest Today Ko (43) Kubo Kyoko",
+                "https://pornimg.xyz/2018/0117/1sdde526pl.jpg",
+            ],
+            "564": [
+                "SDDE-564 Cooking \u00b7 Laundry \u00b7 Libido Treatment 9 Sons, Husband And Consecutive Sex Morning Life Naho (38) Nagaho Yamaguchi",
+                "https://pornimg.xyz/2018/1227/1sdde564pl.jpg",
+            ],
+            "582": [
+                "SDDE-582 Emergency Lifesaving (immediately Fuck) Sexual Intercourse Center",
+                "https://pornimg.xyz/2019/0513/1sdde582pl.jpg",
+            ],
+            "589": [
+                "SDDE-589 Cooking, Laundry, Libido Processing 9 Sons, Husband And Continuous Sex Morning Life Saki Kato (34)",
+                "https://pornimg.xyz/2019/0715/1sdde589pl.jpg",
+            ],
+            "596": [
+                "SDDE-596 Hospitality In \u201cUniform, Underwear, Naked\u201d Oma \u25cb Co Airlines 11 Deca Ass Flight",
+                "https://pornimg.xyz/2019/1124/1sdde596pl.jpg",
+            ],
+            "602": [
+                "SDDE-602 A Single Woman In A Family Full Of Men Daily Life With 10 Brothers While Doing Busy Chores Everyday Mirei Nitta",
+                "https://pornimg.xyz/2020/0108/1sdde602pl.jpg",
+            ],
+            "605": [
+                "SDDE-605 Daddy Mom Do Your Best! With A Slimy Lotion, Your Friend\u2019s Family Will Endure The Championship! Total 9 Cum Shots!",
+                "https://pornimg.xyz/2019/1212/1sdde605pl.jpg",
+            ],
+            "631": [
+                "SDDE-631 (Super Popular!) Cooking, Cleaning, Sex These 7 Big Families Will Take Care Of Those Needs And Transcend Time To Gather Here!! Consecutive Sex In The Morning 7 Titles 70 Ejaculations 240-Minute Special!",
+                "https://pornimg.xyz/2020/0819/1sdde00631pl.jpg",
+            ],
+            "636": [
+                "SDDE-636 Cooking / Washing / Sexual Desire Processing 10 Continuous Sex With My Son Morning Life Maiko Ayase (48)",
+                "https://pornimg.xyz/2021/0205/1sdde636pl.jpg",
+            ],
+            "638": [
+                "SDDE-638 Tobizio! EVENING NEWS Female Ana Who Reads The Manuscript Calmly Even If She Keeps Squirting And Incontinence During The Production",
+                "https://pornimg.xyz/2021/0312/1sdde638pl.jpg",
+            ],
+            "643": [
+                "SDDE-643 In-Flight Sexual Services: Uniform, Lingerie, Or Totally Nude 13 \u2013 Pussy Spread Wide For Cowgirl \u2013 Black Pantyhose Version",
+                "https://pornimg.xyz/2021/0203/1sdde00643pl.jpg",
+            ],
+        }
+
+        for _ in Data:
+            Title, Image = Data[_][0], Data[_][1]
+            Payload = discord.Embed(
+                title=f"SDDE {_}", description=Title, color=ctx.author.color
+            ).set_image(url=Image)
+            await Respond(ctx, Payload, True, True)
 
 
 def setup(bot):
