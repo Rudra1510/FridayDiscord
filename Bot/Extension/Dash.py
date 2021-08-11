@@ -279,7 +279,7 @@ class Dash(commands.Cog):
             return await Respond(ctx, Payload)
 
     @commands.command()
-    async def Data(self, ctx, Function=None):
+    async def data(self, ctx, Function=None):
         if not await Role(ctx):
             return ctx.message.delete()
 
@@ -302,7 +302,8 @@ class Dash(commands.Cog):
                 DataLength = len(RawData)
                 DataString = "\n".join(RawData)
                 Payload = f"```Deleted {DataLength} Files from the Data folder. Named as:\n{DataString}\n------```"
-
+                
+                RawData.remove('Empty.txt')
                 for File in RawData:
                     os.remove("Data/" + File)
 
