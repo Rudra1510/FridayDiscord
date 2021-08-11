@@ -154,7 +154,7 @@ class Download:
                 {
                     "key": "FFmpegExtractAudio",
                     "preferredcodec": "mp3",
-                    "preferredquality": "320",
+                    "preferredquality": "192",
                 }
             ],
         }
@@ -180,16 +180,19 @@ class Download:
         else:
             Options = AudioPref
 
+        with youtube_dl.YoutubeDL(Options) as Cursor:
+            InfoDict = Cursor.extract_info(Link, download=False)
+            Title = (
+                InfoDict["title"].replace('"', "").replace("'", "").replace("|", "-")
+            )
+            FileName = f"{Title}.{InfoDict['ext']}"
+            Options["outtmpl"] = "Data/" + FileName
         with youtube_dl.YoutubeDL(Options) as Downloader:
-            InfoDict = Downloader.extract_info(Link)
-            Title = InfoDict.get("title", None)
-            print(Title)
+            Downloader.download([Link])
 
-        for File in os.listdir("Data"):
+        for File in os.listdir('Data'):
             if Title in File:
                 return File.replace(" ", "%20")
-        else:
-            return "Empty.txt"
 
     def Reddit(self, URL):
         cookies = {"over18": "1"}
