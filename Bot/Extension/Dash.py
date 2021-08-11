@@ -146,9 +146,8 @@ class Message(commands.Cog):
                 Length = len(Data)
                 for _ in Data:
                     await message.channel.send(_)
-                await message.channel.send(
-                    f"**Type ||.purge {Length+1}|| to clear this.**"
-                )
+                Payload = f"**Type ||.purge {Length+1}|| to clear this.**"
+                await message.channel.send(Payload)
 
         elif "hdporncomics.com" in message.content.lower():
             if "pdf" in message.content.lower():
@@ -279,13 +278,13 @@ class Dash(commands.Cog):
             return await Respond(ctx, Payload)
 
     @commands.command()
-    async def data(self, ctx, Function=None):
+    async def data(self, ctx, Function=None, File=None):
         if not await Role(ctx):
             return ctx.message.delete()
 
         try:
-            Functions = ["delete", "list", "link"]
-            HelpMessage = f"```.Data <Function>\n-----\nFunction ={str(Functions)}```"
+            Functions = ["deletea", "deletef", "list", "link"]
+            HelpMessage = f"```.Data <Function> <File=None>\n-----\nFunction ={str(Functions)}\n<File> is only usable for deletef command.```"
 
             if Function == None:  # or Key == None:
                 await ctx.message.add_reaction("\u274C")  # Wrong
@@ -295,7 +294,7 @@ class Dash(commands.Cog):
                 await ctx.message.add_reaction("\u274C")  # Wrong
                 return await Respond(ctx, HelpMessage)
 
-            elif Function.lower() == "delete":
+            elif Function.lower() == "deletea":
                 await ctx.message.add_reaction("\u2705")  # Right
 
                 RawData = os.listdir("Data")
@@ -308,6 +307,24 @@ class Dash(commands.Cog):
                     os.remove("Data/" + File)
 
                 return await Respond(ctx, Payload, False, False)
+
+            elif Function.lower() == "deletef":
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload1 = f"```There are {DataLength} Files in the Data folder. Please use any one of this file as an argument for deletef function:\n{DataString}\n------```"
+
+                if File == None:
+                    await ctx.message.add_reaction("\u274C")  # Wrong
+                    return await Respond(ctx, HelpMessage, False, False)
+                elif File not in RawData:
+                    await ctx.message.add_reaction("\u274C")  # Wrong
+                    return await Respond(ctx, Payload1, False, False)
+                elif File in RawData:
+                    await ctx.message.add_reaction("\u2705")  # Right
+                    Payload2 = f"```Deleted: {File}```"
+                    os.remove(File)
+                    await Respond(ctx, Payload2, False, False)
 
             elif Function.lower() == "list":
                 await ctx.message.add_reaction("\u2705")  # Right
