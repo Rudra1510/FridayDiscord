@@ -302,8 +302,8 @@ class Dash(commands.Cog):
                 DataLength = len(RawData)
                 DataString = "\n".join(RawData)
                 Payload = f"```Deleted {DataLength} Files from the Data folder. Named as:\n{DataString}\n------```"
-                
-                RawData.remove('Empty.txt')
+
+                RawData.remove("Empty.txt")
                 for File in RawData:
                     os.remove("Data/" + File)
 
@@ -324,7 +324,9 @@ class Dash(commands.Cog):
 
                 RawData = os.listdir("Data")
                 DataLength = len(RawData)
-                DataString = "\n".join([Host + File for File in RawData])
+                DataString = "\n".join(
+                    [Host + File.replace(" ", "%20") for File in RawData]
+                )
                 Payload = f"There are {DataLength} Files in the Data folder. Here are the links:\n{DataString}\n------"
 
                 return await Respond(ctx, Payload, False, False)
