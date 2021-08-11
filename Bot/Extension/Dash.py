@@ -62,6 +62,9 @@ class Message(commands.Cog):
             BackupChannel = self.bot.get_channel(842390320057942028)
             await BackupChannel.send(f"{message.author}:{message.content}")
 
+        elif message.author.id == 796011920141320192:
+            return
+
         if "youtu" in message.content.lower():
             try:
                 File = Download().YouTube(message.content)
