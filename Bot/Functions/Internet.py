@@ -148,18 +148,18 @@ class Other:
 class Download:
     def YouTube(self, Text):
         AudioPref = {
-            "outtmpl": "baby/Functions/%(title)s.%(ext)s",
+            "outtmpl": "Data/%(title)s.%(ext)s",
             "format": "bestaudio/best",
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
                     "preferredcodec": "mp3",
-                    "preferredquality": "192",
+                    "preferredquality": "320",
                 }
             ],
         }
         VideoPref = {
-            "outtmpl": "baby/Functions/%(title)s.%(ext)s",
+            "outtmpl": "Data/%(title)s.%(ext)s",
         }
 
         Texts = Text.split()
@@ -173,22 +173,23 @@ class Download:
             Link = Text
             Options = AudioPref
 
-        if "-a" in Text:
+        if "mp3" in Text or "audio" in Text:
             Options = AudioPref
-        elif "-v" in Text:
+        elif "vid" in Text:
             Options = VideoPref
         else:
             Options = AudioPref
 
         with youtube_dl.YoutubeDL(Options) as Downloader:
-            Downloader.download([Link])
+            InfoDict = Downloader.extract_info(Link)
+            Title = InfoDict.get("title", None)
+            print(Title)
 
-        for FileName in os.listdir("./baby/Functions"):
-            Extension = FileName.split(".")[-1]
-            MediaExtensions = ["mp4", "mkv", "webm", "mp3", "m4a"]
-
-            if Extension in MediaExtensions:
-                return f"./baby/Functions/{FileName}"
+        for File in os.listdir("Data"):
+            if Title in File:
+                return File.replace(" ", "%20")
+        else:
+            return "Empty.txt"
 
     def Reddit(self, URL):
         cookies = {"over18": "1"}

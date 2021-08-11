@@ -68,9 +68,7 @@ class Message(commands.Cog):
         if "youtu" in message.content.lower():
             try:
                 File = Download().YouTube(message.content)
-                await message.author.send(file=discord.File(File))
-                time.sleep(1)
-                os.remove(File)
+                await message.author.send(f"{Host}{File}")
             except Exception as e:
                 Payload = f"Message.youtube(): {type(e).__name__}"
                 await message.author.send(Payload)
