@@ -62,9 +62,6 @@ class Message(commands.Cog):
             BackupChannel = self.bot.get_channel(842390320057942028)
             await BackupChannel.send(f"{message.author}:{message.content}")
 
-        if message.author.id not in [529251441504681994, 858998113453080577]:
-            return
-
         if "youtu" in message.content.lower():
             try:
                 File = Download().YouTube(message.content)
@@ -73,7 +70,10 @@ class Message(commands.Cog):
                 Payload = f"Message.youtube(): {type(e).__name__}"
                 await message.author.send(Payload)
 
-        elif "twitter.com" in message.content.lower():
+        if message.author.id not in [529251441504681994, 858998113453080577]:
+            return
+
+        if "twitter.com" in message.content.lower():
             try:
                 File = Download().Twitter(message.content)
                 await message.author.send(file=discord.File(File))
