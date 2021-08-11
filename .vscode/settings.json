@@ -10,5 +10,6 @@
     "editor.formatOnPaste": false,
     "files.exclude": {
         "**/__pycache__/**": true
-    }
+    },
+    "jupyter.jupyterServerType": "local"
 }

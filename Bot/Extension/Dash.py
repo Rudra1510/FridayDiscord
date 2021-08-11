@@ -1,5 +1,7 @@
 from Imports import *
 
+Host = "https://FridayDiscord.rudra1510.repl.co/"
+
 
 async def Respond(Target, Payload, Send=False, Embed=False):
     async with Target.typing():
@@ -29,7 +31,7 @@ async def Role(ctx, Check=["Admin", "Developer"]):
         else:
             return True
     except AttributeError:
-        Whitelist = [529251441504681994]
+        Whitelist = [529251441504681994, 858998113453080577]
         if ctx.author.id in Whitelist:
             return True
         else:
@@ -60,7 +62,7 @@ class Message(commands.Cog):
             BackupChannel = self.bot.get_channel(842390320057942028)
             await BackupChannel.send(f"{message.author}:{message.content}")
 
-        if message.author.id != 529251441504681994:
+        if message.author.id not in [529251441504681994, 858998113453080577]:
             return
 
         if "youtu" in message.content.lower():
@@ -139,8 +141,7 @@ class Message(commands.Cog):
         elif "allporncomic.com" in message.content.lower():
             if "pdf" in message.content.lower():
                 Data = Download().AllPC(message.content.split()[0], True)
-                await message.author.send(file=discord.File(Data))
-                os.remove(Data)
+                await message.author.send(f"{Host}{Data}")
 
             else:
                 Data = Download().AllPC(message.content.lower(), False)
@@ -154,8 +155,7 @@ class Message(commands.Cog):
         elif "hdporncomics.com" in message.content.lower():
             if "pdf" in message.content.lower():
                 Data = Download().HDPC(message.content.split()[0], True)
-                await message.author.send(file=discord.File(Data))
-                os.remove(Data)
+                await message.author.send(f"{Host}{Data}")
 
             else:
                 Data = Download().HDPC(message.content.lower(), False)
@@ -277,6 +277,61 @@ class Dash(commands.Cog):
 
         except Exception as e:
             Payload = f"Dash.DB(): {type(e).__name__}"
+            await ctx.message.add_reaction("\u274C")  # Wrong
+            return await Respond(ctx, Payload)
+
+    @commands.command()
+    async def Data(self, ctx, Function=None):
+        if not await Role(ctx):
+            return ctx.message.delete()
+
+        try:
+            Functions = ["delete", "list", "link"]
+            HelpMessage = f"```.Data <Function>\n-----\nFunction ={str(Functions)}```"
+
+            if Function == None:  # or Key == None:
+                await ctx.message.add_reaction("\u274C")  # Wrong
+                return await Respond(ctx, HelpMessage)
+
+            elif Function.lower() not in Functions:
+                await ctx.message.add_reaction("\u274C")  # Wrong
+                return await Respond(ctx, HelpMessage)
+
+            elif Function.lower() == "delete":
+                await ctx.message.add_reaction("\u2705")  # Right
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload = f"```Deleted {DataLength} Files from the Data folder. Named as:\n{DataString}\n------```"
+
+                for File in RawData:
+                    os.remove("Data/" + File)
+
+                return await Respond(ctx, Payload, False, False)
+
+            elif Function.lower() == "list":
+                await ctx.message.add_reaction("\u2705")  # Right
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload = f"```There are {DataLength} Files in the Data folder. Named as:\n{DataString}\n------```"
+
+                return await Respond(ctx, Payload, False, False)
+
+            elif Function.lower() == "link":
+                await ctx.message.add_reaction("\u2705")  # Right
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join([Host + File for File in RawData])
+                Payload = f"There are {DataLength} Files in the Data folder. Here are the links:\n{DataString}\n------"
+
+                return await Respond(ctx, Payload, False, False)
+
+        except Exception as e:
+            Payload = f"Dash.Data(): {type(e).__name__}"
             await ctx.message.add_reaction("\u274C")  # Wrong
             return await Respond(ctx, Payload)
 

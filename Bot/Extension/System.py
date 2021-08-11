@@ -15,18 +15,39 @@ async def Respond(Target, Payload, Send=False, Embed=False):
 
 
 async def Role(ctx, Check=["Admin", "Developer"]):
-    Roles = [Role.name for Role in ctx.author.roles]
-    RolesInt = len(set(Roles).intersection(Check))
-    if RolesInt < 1:
+    try:
+        Roles = [Role.name for Role in ctx.author.roles]
+        RolesInt = len(set(Roles).intersection(Check))
+        if RolesInt < 1:
+            await ctx.message.add_reaction("\u274C")  # Wrong
+            Payload = f"Unauthorized Access Denied."
+            Current = await Respond(ctx, Payload)
+            await asyncio.sleep(3)
+            await Current.delete()
+            await ctx.message.delete()
+            return None
+        else:
+            return True
+    except AttributeError:
+        Whitelist = [529251441504681994, 858998113453080577]
+        if ctx.author.id in Whitelist:
+            return True
+        else:
+            await ctx.message.add_reaction("\u274C")  # Wrong
+            Payload = f"Unauthorized Access Denied."
+            Current = await Respond(ctx, Payload)
+            await asyncio.sleep(3)
+            await Current.delete()
+            await ctx.message.delete()
+            return None
+    except Exception as e:
         await ctx.message.add_reaction("\u274C")  # Wrong
-        Payload = f"Unauthorized Access Denied."
+        Payload = f"Roles(): {type(e).__name__}"
         Current = await Respond(ctx, Payload)
         await asyncio.sleep(3)
         await Current.delete()
         await ctx.message.delete()
         return None
-    else:
-        return True
 
 
 class System(commands.Cog):

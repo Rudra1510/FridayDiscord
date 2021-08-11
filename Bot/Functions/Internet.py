@@ -320,12 +320,12 @@ class Download:
         return "Tweet.jpeg"
 
     def AllPC(self, URL, PDF):
-        if PDF == True:
-            r = requests.get(URL, headers=headers)
-            Soup = bs4.BeautifulSoup(r.content, "html.parser")
-            Wrapper = Soup.find("div", attrs={"class": "reading-content"})
-            Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
+        r = requests.get(URL, headers=headers)
+        Soup = bs4.BeautifulSoup(r.content, "html.parser")
+        Wrapper = Soup.find("div", attrs={"class": "reading-content"})
+        Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
 
+        if PDF == True:
             Folder = URL.split("/")[-2]
 
             if os.path.isdir(Folder) == True:
@@ -346,7 +346,7 @@ class Download:
                     F.write(r.content)
 
             Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
-            with open(f"{Folder}.pdf", "wb") as f:
+            with open(f"Data/{Folder}.pdf", "wb") as f:
                 f.write(img2pdf.convert(Images))
 
             shutil.rmtree(Folder)
@@ -354,19 +354,15 @@ class Download:
             return f"{Folder}.pdf"
 
         elif PDF == False:
-            r = requests.get(URL, headers=headers)
-            Soup = bs4.BeautifulSoup(r.content, "html.parser")
-            Wrapper = Soup.find("div", attrs={"class": "reading-content"})
-            Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
             return Data
 
     def HDPC(self, URL, PDF):
-        if PDF == True:
-            r = requests.get(URL, headers=headers)
-            Soup = bs4.BeautifulSoup(r.content, "html.parser")
-            Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
-            Data = [Var["href"] for Var in Wrapper]
+        r = requests.get(URL, headers=headers)
+        Soup = bs4.BeautifulSoup(r.content, "html.parser")
+        Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
+        Data = [Var["href"] for Var in Wrapper]
 
+        if PDF == True:
             Folder = URL.split("/")[-2]
 
             if os.path.isdir(Folder) == True:
@@ -387,17 +383,14 @@ class Download:
                     F.write(r.content)
 
             Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
-            with open(f"{Folder}.pdf", "wb") as f:
+            with open(f"Data/{Folder}.pdf", "wb") as f:
                 f.write(img2pdf.convert(Images))
 
             shutil.rmtree(Folder)
 
             return f"{Folder}.pdf"
+
         elif PDF == False:
-            r = requests.get(URL, headers=headers)
-            Soup = bs4.BeautifulSoup(r.content, "html.parser")
-            Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
-            Data = [Var["href"] for Var in Wrapper]
             return Data
 
 
