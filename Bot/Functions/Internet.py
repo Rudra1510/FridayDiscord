@@ -399,6 +399,7 @@ class Download:
             return Data
 
     async def NHentai(self, URL):
+        StartTime = time.time()
         HomeSoup = bs4.BeautifulSoup(requests.get(URL.split()[0]).content, "html.parser")
         Section = HomeSoup.find("div", attrs={"id": "info"}).find("section")
         Length = [
@@ -428,7 +429,10 @@ class Download:
         with open(f"Data/{FileName}", "wb") as F:
             F.write(img2pdf.convert(ImageContents))
 
-        return FileName.replace(" ", "%20")
+        LinkName = FileName.replace(" ", "%20")
+        TotalTime = round(time.time()-StartTime)
+        Results = f'Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image.'
+        return f'{LinkName}\n{Results}'
 
 class DB:
     def __init__(self):
