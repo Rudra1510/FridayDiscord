@@ -166,6 +166,10 @@ class Message(commands.Cog):
                     f"**Type ||.purge {Length+1}|| to clear this.**"
                 )
 
+        elif "nhentai.net/g/" in message.content.lower():
+            Data = await Download().NHentai(message.content.split()[0])
+            await message.author.send(f"{Host}{Data}")
+
 
 class Dash(commands.Cog):
     def __init__(self, bot):

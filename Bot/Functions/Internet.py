@@ -190,7 +190,7 @@ class Download:
         with youtube_dl.YoutubeDL(Options) as Downloader:
             Downloader.download([Link])
 
-        for File in os.listdir('Data'):
+        for File in os.listdir("Data"):
             if Title in File:
                 return File.replace(" ", "%20")
 
@@ -396,6 +396,59 @@ class Download:
 
         elif PDF == False:
             return Data
+
+    async def NHentai(self, URL):
+        HomeSoup = bs4.BeautifulSoup(
+            requests.get(URL.split()[0]).content, "html.parser"
+        )
+        Section = HomeSoup.find("div", attrs={"id": "info"}).find("section")
+        Length = [
+            int(Division.find("span", attrs={"class": "name"}).text.strip())
+            for Division in Section
+            if "Pages:" in Division.text
+        ][0]
+        Title = HomeSoup.find("h1", attrs={"class": "title"}).text.replace("|", "")
+
+        ImageSoup = bs4.BeautifulSoup(requests.get(URL + "1/").content, "html.parser")
+        ImageLinkRaw = (
+            ImageSoup.find("section", attrs={"id": "image-container"})
+            .find("a")
+            .find("img")["src"]
+        )
+
+        ImageLinkTemplate = "/".join(ImageLinkRaw.split("/")[0:-1])
+        ImageExtension = (ImageLinkRaw.split("/")[-1]).split(".")[-1]
+
+        FolderNumber = ImageLinkTemplate.split("/")[-1]
+        Folder = f"Data/" + ImageLinkTemplate.split("/")[-1]
+
+        if os.path.isdir(Folder) == True:
+            if len(os.listdir(Folder)) == 0:
+                pass
+            else:
+                shutil.rmtree(Folder)
+                os.mkdir(Folder)
+        elif os.path.isdir(Folder) == False:
+            os.mkdir(Folder)
+
+        for i in range(1, Length + 1):
+            ImageLink = ImageLinkTemplate + f"/{i}.{ImageExtension}"
+            ImageFile = f"{Folder}/{str(i).zfill(3)}.{ImageExtension}"
+            with open(ImageFile, "wb") as F:
+                F.write(requests.get(ImageLink).content)
+
+        Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
+        FileName = f"{FolderNumber} - {Title}.pdf"
+
+        if os.path.isfile(f"Data/{FileName}"):
+            os.remove(f"Data/{FileName}")
+
+        with open(f"Data/{FileName}", "wb") as F:
+            F.write(img2pdf.convert(Images))
+
+        shutil.rmtree(Folder)
+
+        return FileName.replace(" ", "%20")
 
 
 class DB:
