@@ -330,7 +330,7 @@ class Dash(commands.Cog):
                 elif File in RawData:
                     await ctx.message.add_reaction("\u2705")  # Right
                     Payload2 = f"```Deleted: {File}```"
-                    os.remove(File)
+                    os.remove("Data/" + File)
                     await Respond(ctx, Payload2, False, False)
 
             elif Function.lower() == "list":
