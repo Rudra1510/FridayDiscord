@@ -39,6 +39,7 @@ Data = {
 
 
 import os
+import re
 import bs4
 import time
 import json
@@ -398,9 +399,7 @@ class Download:
             return Data
 
     async def NHentai(self, URL):
-        HomeSoup = bs4.BeautifulSoup(
-            requests.get(URL.split()[0]).content, "html.parser"
-        )
+        HomeSoup = bs4.BeautifulSoup(requests.get(URL.split()[0]).content, "html.parser")
         Section = HomeSoup.find("div", attrs={"id": "info"}).find("section")
         Length = [
             int(Division.find("span", attrs={"class": "name"}).text.strip())
@@ -416,40 +415,20 @@ class Download:
             .find("img")["src"]
         )
 
-        ImageLinkTemplate = "/".join(ImageLinkRaw.split("/")[0:-1])
-        ImageExtension = (ImageLinkRaw.split("/")[-1]).split(".")[-1]
+        reCursor = re.match(r"https://i.nhentai.net/galleries/(.*)/(\d).(.*)", ImageLinkRaw)
+        LinkTemplate = (
+            f"https://i.nhentai.net/galleries/{reCursor.group(1)}/%s.{reCursor.group(3)}"
+        )
+        ImageLinks = [LinkTemplate % str(i) for i in range(1, Length + 1)]
+        ImageContents = [requests.get(ImageLink).content for ImageLink in ImageLinks]
 
-        FolderNumber = ImageLinkTemplate.split("/")[-1]
-        Folder = f"Data/" + ImageLinkTemplate.split("/")[-1]
-
-        if os.path.isdir(Folder) == True:
-            if len(os.listdir(Folder)) == 0:
-                pass
-            else:
-                shutil.rmtree(Folder)
-                os.mkdir(Folder)
-        elif os.path.isdir(Folder) == False:
-            os.mkdir(Folder)
-
-        for i in range(1, Length + 1):
-            ImageLink = ImageLinkTemplate + f"/{i}.{ImageExtension}"
-            ImageFile = f"{Folder}/{str(i).zfill(3)}.{ImageExtension}"
-            with open(ImageFile, "wb") as F:
-                F.write(requests.get(ImageLink).content)
-
-        Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
-        FileName = f"{FolderNumber} - {Title}.pdf"
-
+        FileName = f"{Title}.pdf"
         if os.path.isfile(f"Data/{FileName}"):
             os.remove(f"Data/{FileName}")
-
         with open(f"Data/{FileName}", "wb") as F:
-            F.write(img2pdf.convert(Images))
-
-        shutil.rmtree(Folder)
+            F.write(img2pdf.convert(ImageContents))
 
         return FileName.replace(" ", "%20")
-
 
 class DB:
     def __init__(self):
