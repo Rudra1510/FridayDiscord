@@ -324,83 +324,82 @@ class Download:
 
         return "Tweet.jpeg"
 
-    def AllPC(self, URL, PDF):
-        r = requests.get(URL, headers=headers)
-        Soup = bs4.BeautifulSoup(r.content, "html.parser")
-        Wrapper = Soup.find("div", attrs={"class": "reading-content"})
-        Data = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
-
-        if PDF == True:
-            Folder = URL.split("/")[-2]
-
-            if os.path.isdir(Folder) == True:
-                if len(os.listdir(Folder)) == 0:
-                    pass
-                else:
-                    shutil.rmtree(Folder)
-                    os.mkdir(Folder)
-            elif os.path.isdir(Folder) == False:
-                os.mkdir(Folder)
-
-            for i, Image in enumerate(Data):
-                Ext = Image.split(".")[-1]
-                File = f"{Folder}/{str(i).zfill(3)}.{Ext}"
-
-                r = requests.get(Image)
-                with open(File, "wb") as F:
-                    F.write(r.content)
-
-            Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
-            with open(f"Data/{Folder}.pdf", "wb") as f:
-                f.write(img2pdf.convert(Images))
-
-            shutil.rmtree(Folder)
-
-            return f"{Folder}.pdf"
-
-        elif PDF == False:
-            return Data
-
-    def HDPC(self, URL, PDF):
-        r = requests.get(URL, headers=headers)
-        Soup = bs4.BeautifulSoup(r.content, "html.parser")
-        Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
-        Data = [Var["href"] for Var in Wrapper]
-
-        if PDF == True:
-            Folder = URL.split("/")[-2]
-
-            if os.path.isdir(Folder) == True:
-                if len(os.listdir(Folder)) == 0:
-                    pass
-                else:
-                    shutil.rmtree(Folder)
-                    os.mkdir(Folder)
-            elif os.path.isdir(Folder) == False:
-                os.mkdir(Folder)
-
-            for i, Image in enumerate(Data):
-                Ext = Image.split(".")[-1]
-                File = f"{Folder}/{str(i).zfill(3)}.{Ext}"
-
-                r = requests.get(Image)
-                with open(File, "wb") as F:
-                    F.write(r.content)
-
-            Images = [f"{Folder}/{I}" for I in os.listdir(Folder)]
-            with open(f"Data/{Folder}.pdf", "wb") as f:
-                f.write(img2pdf.convert(Images))
-
-            shutil.rmtree(Folder)
-
-            return f"{Folder}.pdf"
-
-        elif PDF == False:
-            return Data
-
-    async def NHentai(self, URL):
+    async def AllPC(self, Message):
         StartTime = time.time()
-        HomeSoup = bs4.BeautifulSoup(requests.get(URL.split()[0]).content, "html.parser")
+
+        URLRE = re.search(r"https://allporncomic.com/porncomic/(.*)/(.*)/", Message)
+        if URLRE.group(2) != "":
+            URL = (
+                f"https://allporncomic.com/porncomic/{URLRE.group(1)}/{URLRE.group(2)}/"
+            )
+            Soup = bs4.BeautifulSoup(
+                requests.get(URL, headers=headers).content, "html.parser"
+            )
+            Wrapper = Soup.find("div", attrs={"class": "reading-content"})
+            Images = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
+            FileName = f"{URLRE.group(1).replace('-',' ').title()} - {URLRE.group(2).replace('-',' ').title()}.pdf"
+        elif URLRE.group(2) == "":
+            URL = f"https://allporncomic.com/porncomic/{URLRE.group(1)}/"
+            Soup = bs4.BeautifulSoup(
+                requests.get(URL, headers=headers).content, "html.parser"
+            )
+            Chapters = [
+                Article["href"]
+                for Article in Soup.find_all("a")[1:]
+                if URL in Article["href"]
+            ][2:][::-1]
+            Images = []
+            for Chapter in Chapters:
+                Soup = bs4.BeautifulSoup(
+                    requests.get(Chapter, headers=headers).content, "html.parser"
+                )
+                Wrapper = Soup.find("div", attrs={"class": "reading-content"})
+                Images.append(
+                    [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
+                )
+
+            FileName = f"{URLRE.group(1).replace('-',' ').title()}.pdf"
+
+        Data = [requests.get(Image).content for Image in Images]
+        with open(f"Data/{FileName}", "wb") as f:
+            f.write(img2pdf.convert(Data))
+
+        TotalTime = round(time.time() - StartTime)
+        Length = len(Images)
+        Results = f"Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image."
+
+        return f"{FileName.replace(' ','%20')}\n{Results}"
+
+    async def HDPC(self, Message):
+        StartTime = time.time()
+
+        URL = re.search(r"https://hdporncomics.com/(.*)/", Message).group(1)
+        URL = f"https://hdporncomics.com/{URL}/"
+        Soup = bs4.BeautifulSoup(
+            requests.get(URL, headers=headers).content, "html.parser"
+        )
+        Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
+        Title = Soup.find("h1").text.replace(" comic porn", "").strip().title()
+        ImageLinks = [Var["href"] for Var in Wrapper]
+        Images = [requests.get(Image).content for Image in ImageLinks]
+        with open(f"Data/{Title}.pdf", "wb") as F:
+            F.write(img2pdf.convert(Images))
+
+        TotalTime = round(time.time() - StartTime)
+        Length = len(Images)
+        Results = f"Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image."
+
+        return f"{Title.replace(' ','%20')}.pdf\n{Results}"
+
+    async def NHentai(self, Message):
+        StartTime = time.time()
+
+        URLRE = re.search(r"https://nhentai.net/g/(.*)/", Message)
+        URL = f"https://nhentai.net/g/{URLRE.group(1)}/"
+
+        HomeSoup = bs4.BeautifulSoup(
+            requests.get(URL.split()[0]).content, "html.parser"
+        )
         Section = HomeSoup.find("div", attrs={"id": "info"}).find("section")
         Length = [
             int(Division.find("span", attrs={"class": "name"}).text.strip())
@@ -416,10 +415,10 @@ class Download:
             .find("img")["src"]
         )
 
-        reCursor = re.match(r"https://i.nhentai.net/galleries/(.*)/(\d).(.*)", ImageLinkRaw)
-        LinkTemplate = (
-            f"https://i.nhentai.net/galleries/{reCursor.group(1)}/%s.{reCursor.group(3)}"
+        reCursor = re.match(
+            r"https://i.nhentai.net/galleries/(.*)/(\d).(.*)", ImageLinkRaw
         )
+        LinkTemplate = f"https://i.nhentai.net/galleries/{reCursor.group(1)}/%s.{reCursor.group(3)}"
         ImageLinks = [LinkTemplate % str(i) for i in range(1, Length + 1)]
         ImageContents = [requests.get(ImageLink).content for ImageLink in ImageLinks]
 
@@ -429,10 +428,10 @@ class Download:
         with open(f"Data/{FileName}", "wb") as F:
             F.write(img2pdf.convert(ImageContents))
 
-        LinkName = FileName.replace(" ", "%20")
-        TotalTime = round(time.time()-StartTime)
-        Results = f'Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image.'
-        return f'{LinkName}\n{Results}'
+        TotalTime = round(time.time() - StartTime)
+        Results = f"Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image."
+        return f"{FileName.replace(' ', '%20')}\n{Results}"
+
 
 class DB:
     def __init__(self):

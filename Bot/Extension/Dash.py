@@ -140,34 +140,15 @@ class Message(commands.Cog):
                 await message.author.send(Payload)
 
         elif "allporncomic.com" in message.content.lower():
-            if "pdf" in message.content.lower():
-                Data = Download().AllPC(message.content.split()[0], True)
-                await message.author.send(f"{Host}{Data}")
-
-            else:
-                Data = Download().AllPC(message.content.lower(), False)
-                Length = len(Data)
-                for _ in Data:
-                    await message.channel.send(_)
-                Payload = f"**Type ||.purge {Length+1}|| to clear this.**"
-                await message.channel.send(Payload)
+            Data = await Download().AllPC(message.content)
+            await message.author.send(f"{Host}{Data}")
 
         elif "hdporncomics.com" in message.content.lower():
-            if "pdf" in message.content.lower():
-                Data = Download().HDPC(message.content.split()[0], True)
-                await message.author.send(f"{Host}{Data}")
-
-            else:
-                Data = Download().HDPC(message.content.lower(), False)
-                Length = len(Data)
-                for _ in Data:
-                    await message.channel.send(_)
-                await message.channel.send(
-                    f"**Type ||.purge {Length+1}|| to clear this.**"
-                )
+            Data = await Download().HDPC(message.content)
+            await message.author.send(f"{Host}{Data}")
 
         elif "nhentai.net/g/" in message.content.lower():
-            Data = await Download().NHentai(message.content.split()[0])
+            Data = await Download().NHentai(message.content)
             await message.author.send(f"{Host}{Data}")
 
 
