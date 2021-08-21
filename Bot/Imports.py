@@ -45,3 +45,4 @@ from Functions.Internet import *
 from googlesearch import search
 from discord.ext import commands
 from giphy_client.rest import ApiException
+from moviepy.editor import *

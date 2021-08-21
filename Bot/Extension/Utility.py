@@ -3,6 +3,8 @@ from Imports import *
 
 nest_asyncio.apply()
 
+Host = "https://FridayDiscord.rudra1510.repl.co/"
+
 
 async def Respond(Target, Payload, Send=False, Embed=False):
     async with Target.typing():
@@ -222,6 +224,63 @@ class Utility(commands.Cog):
 
         finally:
             await Respond(ctx, Payload, False, True)
+
+    @commands.command()
+    async def yttrim(self, ctx, URL=None, Start=None, Stop=None):
+        HelpMessage = "```.yttrim <URL> <Start> <Stop>\nTime is only vaild in seconds as of now.```"
+        IncorrectArgs = "**Incorrect Arguments.**\n```.yttrim <URL> <Start> <Stop>\nTime is only vaild in seconds as of now.```"
+
+        if URL == None or Start == None or Stop == None:
+            return await Respond(ctx, HelpMessage, False, False)
+
+        if "https://" not in URL or "youtu" not in URL:
+            return await Respond(ctx, HelpMessage, False, False)
+
+        StartRE = re.search(r"(\d\d):(\d\d)", Start)
+        StopRE = re.search(r"(\d\d):(\d\d)", Stop)
+        if StartRE != None or StopRE != None:
+            Start = StartRE[1] * 60 + StartRE[2]
+            Stop = StopRE[1] * 60 + StopRE[2]
+
+        VideoPref = {
+            "outtmpl": "Data/%(title)s.%(ext)s",
+        }
+
+        with youtube_dl.YoutubeDL(VideoPref) as Cursor:
+            InfoDict = Cursor.extract_info(URL, download=False)
+            Duration = InfoDict["duration"]
+            Title = (
+                InfoDict["title"].replace('"', "").replace("'", "").replace("|", "-")
+            )
+            FileName = f"{Title}.{InfoDict['ext']}"
+            VideoPref["outtmpl"] = "Data/" + FileName
+
+        try:
+            if type(int(Start)) != int or type(int(Stop)) != int:
+                return await Respond(ctx, IncorrectArgs, False, False)
+        except ValueError:
+            return await Respond(ctx, IncorrectArgs, False, False)
+
+        Start, Stop = int(Start), int(Stop)
+
+        if Start > Stop:
+            return await (ctx, IncorrectArgs + "\n**Start>Stop**")
+
+        elif Start > Duration or Stop > Duration:
+            return await (ctx, IncorrectArgs + "\n**Start or Stop > Duration**")
+
+        # If everything is perfect
+        FileName = Download().YouTube(URL + " vid").replace("%20", " ")
+        TrimFileName = "Trim - " + FileName
+        TrimFile = "Data/Trim - " + FileName
+        File = "Data/" + FileName
+        with VideoFileClip(filename=File) as Clip:
+            Clip = Clip.subclip(Start, Stop)
+            Clip.write_videofile(TrimFile)
+        os.remove(File)
+
+        Payload = Host + TrimFileName.replace(" ", "%20")
+        return await Respond(ctx, Payload, False, False)
 
 
 class Information(commands.Cog):

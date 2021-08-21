@@ -161,6 +161,8 @@ class Download:
         }
         VideoPref = {
             "outtmpl": "Data/%(title)s.%(ext)s",
+            "merge-output-format": "mp4",
+            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]",
         }
 
         Texts = Text.split()
@@ -184,9 +186,13 @@ class Download:
         with youtube_dl.YoutubeDL(Options) as Cursor:
             InfoDict = Cursor.extract_info(Link, download=False)
             Title = (
-                InfoDict["title"].replace('"', "").replace("'", "").replace("|", "-")
+                InfoDict["title"]
+                .replace('"', "")
+                .replace("'", "")
+                .replace("|", "-")
+                .replace("?", "#")
             )
-            FileName = f"{Title}.{InfoDict['ext']}"
+            FileName = f"{Title}.mp4"
             Options["outtmpl"] = "Data/" + FileName
         with youtube_dl.YoutubeDL(Options) as Downloader:
             Downloader.download([Link])
