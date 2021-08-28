@@ -167,14 +167,16 @@ class Dash(commands.Cog):
         Biqles = Data[4][::-1]
         Images = Data[5][::-1]
         Videos = Data[6][::-1]
+        Descriptions = Data[7][::-1]
 
         for i in range(len(Titles)):
             Timestamp = datetime.datetime.now()
-            Links = f"{Links[i]}\n{Daftsexs[i]}\n{Biqles[i]}"
+            LinksSTR = f"{Links[i]}\n{Daftsexs[i]}\n{Biqles[i]}"
             Var = [Titles[i], Pornstars[i]]
             embed = discord.Embed(colour=Color, timestamp=Timestamp)
             embed.add_field(name=Var[0], value=Var[1], inline=False)
-            embed.add_field(name="Links", value=Links, inline=False)
+            embed.add_field(name="Links", value=LinksSTR, inline=False)
+            embed.add_field(name="Description", value=Descriptions[i], inline=False)
             embed.set_image(url=Images[i])
             embed.set_footer(text=os.path.basename(__file__))
             await Target.send(embed=embed)

@@ -497,6 +497,15 @@ class Parser:
             )
         ]
 
+        Descriptions = [
+            bs4.BeautifulSoup(
+                requests.get(url=Link, headers=headers).content, "html.parser"
+            )
+            .find("p", attrs={"class": "video-description"})
+            .text
+            for Link in Links[:Number]
+        ]
+
         Images = [
             bs4.BeautifulSoup(
                 requests.get(Link, headers=headers).content, "html.parser"
@@ -516,6 +525,7 @@ class Parser:
             Biqle[:Number],
             Images,
             Videos,
+            Descriptions
         ]
 
     def TeamSkeetTubeRandom(self, Number=1):

@@ -187,6 +187,20 @@ class Utility(commands.Cog):
             await Respond(ctx, Payload)
 
     @commands.command()
+    async def cover(self, ctx, Iteration=1):
+        Payload = ("```" + " " * 10 + "\n " * 100 + "\n```" )* Iteration
+        return await Respond(ctx, Payload, True, False)
+
+    @commands.command()
+    async def test(self, ctx):
+        Emojis = [
+            "\U0001F44C",  # Ok Hand
+            "\u274C",  # Wrong
+            "\u2705",  # Right
+        ]
+        return await ctx.message.add_reaction("\U0001F44C")  # Okay Hand Sign
+
+    @commands.command()
     async def shorten(self, ctx, Link=None):
         try:
             Payload = Other().Shorten(Link)
