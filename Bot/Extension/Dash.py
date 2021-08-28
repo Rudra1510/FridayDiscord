@@ -16,10 +16,20 @@ async def Respond(Target, Payload, Send=False, Embed=False):
         return await Target.reply(Payload)
 
 
-async def Role(ctx, Check=["Admin", "Developer"]):
+async def Role(ctx):
+    Check = ["Admin", "Developer"]
+    Whitelist = [529251441504681994, 858998113453080577]
     try:
-        Roles = [Role.name for Role in ctx.author.roles]
+
+        if ctx.author.id in Whitelist:
+            return True
+        elif ctx.channel.type.value == 1:
+            Roles = ["Member"]
+        elif ctx.channel.type.value == 0:
+            Roles = [Role.name for Role in ctx.author.roles]
+
         RolesInt = len(set(Roles).intersection(Check))
+
         if RolesInt < 1:
             await ctx.message.add_reaction("\u274C")  # Wrong
             Payload = f"Unauthorized Access Denied."
@@ -30,18 +40,6 @@ async def Role(ctx, Check=["Admin", "Developer"]):
             return None
         else:
             return True
-    except AttributeError:
-        Whitelist = [529251441504681994, 858998113453080577]
-        if ctx.author.id in Whitelist:
-            return True
-        else:
-            await ctx.message.add_reaction("\u274C")  # Wrong
-            Payload = f"Unauthorized Access Denied."
-            Current = await Respond(ctx, Payload)
-            await asyncio.sleep(3)
-            await Current.delete()
-            await ctx.message.delete()
-            return None
     except Exception as e:
         await ctx.message.add_reaction("\u274C")  # Wrong
         Payload = f"Roles(): {type(e).__name__}"
@@ -58,12 +56,11 @@ class Message(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.id != 796011920141320192:
-            BackupChannel = self.bot.get_channel(842390320057942028)
-            await BackupChannel.send(f"{message.author}:{message.content}")
-
-        elif message.author.id == 796011920141320192:
+        if message.author.bot == True:
             return
+
+        BackupChannel = self.bot.get_channel(842390320057942028)
+        await BackupChannel.send(f"{message.author}:{message.content}")
 
         if "youtu" in message.content.lower():
             try:

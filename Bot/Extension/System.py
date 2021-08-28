@@ -14,10 +14,20 @@ async def Respond(Target, Payload, Send=False, Embed=False):
         return await Target.reply(Payload)
 
 
-async def Role(ctx, Check=["Admin", "Developer"]):
+async def Role(ctx):
+    Check = ["Admin", "Developer"]
+    Whitelist = [529251441504681994, 858998113453080577]
     try:
-        Roles = [Role.name for Role in ctx.author.roles]
+
+        if ctx.author.id in Whitelist:
+            return True
+        elif ctx.channel.type.value == 1:
+            Roles = ["Member"]
+        elif ctx.channel.type.value == 0:
+            Roles = [Role.name for Role in ctx.author.roles]
+
         RolesInt = len(set(Roles).intersection(Check))
+
         if RolesInt < 1:
             await ctx.message.add_reaction("\u274C")  # Wrong
             Payload = f"Unauthorized Access Denied."
@@ -28,18 +38,6 @@ async def Role(ctx, Check=["Admin", "Developer"]):
             return None
         else:
             return True
-    except AttributeError:
-        Whitelist = [529251441504681994, 858998113453080577]
-        if ctx.author.id in Whitelist:
-            return True
-        else:
-            await ctx.message.add_reaction("\u274C")  # Wrong
-            Payload = f"Unauthorized Access Denied."
-            Current = await Respond(ctx, Payload)
-            await asyncio.sleep(3)
-            await Current.delete()
-            await ctx.message.delete()
-            return None
     except Exception as e:
         await ctx.message.add_reaction("\u274C")  # Wrong
         Payload = f"Roles(): {type(e).__name__}"
@@ -178,6 +176,24 @@ class Management(commands.Cog):
                     Payload = f"Management.send(): {type(e).__name__}"
                     await ctx.message.add_reaction("\u274C")  # Wrong
                     await Respond(ctx, Payload)
+
+    @commands.command()
+    async def cover(self, ctx, Iteration=1):
+        if not await Role(ctx):
+            return
+
+        try:
+            Void = "\n " * 100 * Iteration
+            Payload = f"```{Void}```"
+            await ctx.message.add_reaction("\u2705")  # Right
+        except Exception as e:
+            Payload = f"Management.cover(): {type(e).__name__}"
+            await ctx.message.add_reaction("\u274C")  # Wrong
+        finally:
+            await Respond(ctx, Payload, True, False)
+            if ctx.channel.type.value == 0:
+                await ctx.message.delete()
+            return
 
 
 def setup(Bot):
