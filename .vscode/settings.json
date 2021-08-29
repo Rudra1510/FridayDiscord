@@ -1,5 +1,15 @@
 {
     "python.pythonPath": "env\\Scripts\\python.exe",
     "python.formatting.provider": "black",
-    "python.analysis.extraPaths": ["Bot","Bot\\Functions\\replitdbx"]
+    "python.analysis.extraPaths": [
+        "\\Bot\\Functions",
+        "Bot\\Functions\\replitdbx"
+    ],
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    "files.exclude": {
+        "**/__pycache__/**": true
+    },
+    "jupyter.jupyterServerType": "local"
 }
