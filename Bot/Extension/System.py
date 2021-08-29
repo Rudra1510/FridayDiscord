@@ -1,51 +1,9 @@
-from Imports import *
-
-
-async def Respond(Target, Payload, Send=False, Embed=False):
-    async with Target.typing():
-        await asyncio.sleep(round(len(Payload) * 0.01))
-    if Send:
-        if Embed:
-            return await Target.send(embed=Payload)
-        return await Target.send(Payload)
-    elif Send == False:
-        if Embed:
-            return await Target.reply(embed=Payload)
-        return await Target.reply(Payload)
-
-
-async def Role(ctx):
-    Check = ["Admin", "Developer"]
-    Whitelist = [529251441504681994, 858998113453080577]
-    try:
-
-        if ctx.author.id in Whitelist:
-            return True
-        elif ctx.channel.type.value == 1:
-            Roles = ["Member"]
-        elif ctx.channel.type.value == 0:
-            Roles = [Role.name for Role in ctx.author.roles]
-
-        RolesInt = len(set(Roles).intersection(Check))
-
-        if RolesInt < 1:
-            await ctx.message.add_reaction("\u274C")  # Wrong
-            Payload = f"Unauthorized Access Denied."
-            Current = await Respond(ctx, Payload)
-            await asyncio.sleep(3)
-            await Current.delete()
-            await ctx.message.delete()
-            return None
-        else:
-            return True
-    except Exception as e:
-        await ctx.message.add_reaction("\u274C")  # Wrong
-        Payload = f"Roles(): {type(e).__name__}"
-        Current = await Respond(ctx, Payload)
-        await asyncio.sleep(3)
-        await Current.delete()
-        await ctx.message.delete()
-        return None
+import re
+import os
+import asyncio
+import discord
+from discord.ext import commands
+from Global import *
 
 
 class System(commands.Cog):
@@ -58,7 +16,6 @@ class System(commands.Cog):
         Target = self.Bot.get_channel(843016447839567912)
         await self.Bot.change_presence(activity=Game)
         await Respond(Target, "----------Booting Up.----------", True)
-        Dash(self.Bot).Update.start()
 
     @commands.command(aliases=["ext"])
     async def extension(self, ctx, Function="", Extension=""):
@@ -77,37 +34,37 @@ class System(commands.Cog):
             Function = Function.strip().lower()
 
             if Function == "list":
-                await ctx.message.add_reaction("\u2705")  # Right
+                await ctx.message.add_reaction(Emoji["Right"])
                 return await Respond(ctx, f"Extension = [{', '.join(FileList)}]", True)
 
             if Extension == "":
                 pass
 
             elif Extension not in FileList:
-                await ctx.message.add_reaction("\u274C")  # Wrong
+                await ctx.message.add_reaction(Emoji["Wrong"])
                 return await Respond(ctx, HelpMessage, True)
 
             if Function == "load":
                 self.Bot.load_extension(f"Extension.{Extension}")
-                return await ctx.message.add_reaction("\u2705")  # Right
+                return await ctx.message.add_reaction(Emoji["Right"])
 
             elif Function == "unload":
                 self.Bot.unload_extension(f"Extension.{Extension}")
-                return await ctx.message.add_reaction("\u2705")  # Right
+                return await ctx.message.add_reaction(Emoji["Right"])
 
             elif Function == "reload":
                 self.Bot.reload_extension(f"Extension.{Extension}")
-                return await ctx.message.add_reaction("\u2705")  # Right
+                return await ctx.message.add_reaction(Emoji["Right"])
 
             elif Function == "list":
                 pass
 
             else:
-                await ctx.message.add_reaction("\u274C")  # Wrong
+                await ctx.message.add_reaction(Emoji["Wrong"])
                 return await Respond(ctx, HelpMessage)
 
         except Exception as e:
-            await ctx.message.add_reaction("\u274C")  # Wrong
+            await ctx.message.add_reaction(Emoji["Wrong"])
             Payload = f"System.extnesion(): {type(e).__name__}"
             return await Respond(ctx, Payload)
 
@@ -122,12 +79,12 @@ class Management(commands.Cog):
             return ctx.message.delete()
 
         try:
-            await ctx.message.add_reaction("\u2705")  # Right
+            await ctx.message.add_reaction(Emoji["Right"])
             await asyncio.sleep(1)
             return await ctx.channel.purge(limit=Value + 1)
         except Exception as e:
             Payload = f"Management.clear(): {type(e).__name__}"
-            await ctx.message.add_reaction("\u274C")  # Wrong
+            await ctx.message.add_reaction(Emoji["Wrong"])
             return await Respond(ctx, Payload)
 
     @commands.command(aliases=["say", "tell"])
@@ -143,7 +100,7 @@ class Management(commands.Cog):
             else:
                 Target = await self.Bot.fetch_user(Variable)
 
-            await ctx.message.add_reaction("\u2705")  # Right
+            await ctx.message.add_reaction(Emoji["Right"])
             return await Respond(Target, Text, True)
 
         except Exception as e:
@@ -155,7 +112,7 @@ class Management(commands.Cog):
                 else:
                     Target = self.Bot.get_channel(Variable)
 
-                await ctx.message.add_reaction("\u2705")  # Right
+                await ctx.message.add_reaction(Emoji["Right"])
                 return await Respond(Target, Text, True)
 
             except Exception as e:
@@ -164,36 +121,118 @@ class Management(commands.Cog):
                     if Variable.isdigit():
                         if int(Variable) > 100:
                             Variable = 100
-                        await ctx.message.add_reaction("\u2705")  # Right
+                        await ctx.message.add_reaction(Emoji["Right"])
                         for i in range(int(Variable)):
                             await Respond(Target, Text, True)
                     else:
                         Payload = Variable + " " + Text
-                        await ctx.message.add_reaction("\u2705")  # Right
+                        await ctx.message.add_reaction(Emoji["Right"])
                         return await Respond(Target, Payload, True)
 
                 except Exception as e:
                     Payload = f"Management.send(): {type(e).__name__}"
-                    await ctx.message.add_reaction("\u274C")  # Wrong
+                    await ctx.message.add_reaction(Emoji["Wrong"])
                     await Respond(ctx, Payload)
 
     @commands.command()
-    async def cover(self, ctx, Iteration=1):
+    async def blank(self, ctx, Iteration=1):
         if not await Role(ctx):
             return
 
         try:
-            Void = "\n " * 100 * Iteration
+            Void = "\n " * 100
             Payload = f"```{Void}```"
-            await ctx.message.add_reaction("\u2705")  # Right
+            await ctx.message.add_reaction(Emoji["Right"])
         except Exception as e:
             Payload = f"Management.cover(): {type(e).__name__}"
-            await ctx.message.add_reaction("\u274C")  # Wrong
+            await ctx.message.add_reaction(Emoji["Wrong"])
         finally:
-            await Respond(ctx, Payload, True, False)
+            if "Management.cover():" not in Payload:
+                for i in range(Iteration + 1):
+                    await Respond(ctx, Payload, True, False)
+            else:
+                await Respond(ctx, Payload, True, False)
             if ctx.channel.type.value == 0:
                 await ctx.message.delete()
             return
+
+    @commands.command()
+    async def data(self, ctx, Function=None, File=None):
+        if not await Role(ctx):
+            return ctx.message.delete()
+
+        try:
+            Functions = ["deletea", "deletef", "list", "link"]
+            HelpMessage = f"```.Data <Function> <File=None>\n-----\nFunction ={str(Functions)}\n<File> is only usable for deletef command.```"
+
+            if Function == None:  # or Key == None:
+                await ctx.message.add_reaction(Emoji["Wrong"])
+                return await Respond(ctx, HelpMessage)
+
+            elif Function.lower() not in Functions:
+                await ctx.message.add_reaction(Emoji["Wrong"])
+                return await Respond(ctx, HelpMessage)
+
+            elif Function.lower() == "deletea":
+                await ctx.message.add_reaction(Emoji["Right"])
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload = f"```Deleted {DataLength} Files from the Data folder. Named as:\n{DataString}\n------```"
+
+                RawData.remove("Empty.txt")
+                if "Data.json" in RawData:
+                    RawData.remove("Data.json")
+                for File in RawData:
+                    os.remove("Data/" + File)
+
+                return await Respond(ctx, Payload, False, False)
+
+            elif Function.lower() == "deletef":
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload1 = f"```There are {DataLength} Files in the Data folder. Please use any one of this file as an argument for deletef function:\n{DataString}\n------```"
+
+                if File == None:
+                    await ctx.message.add_reaction(Emoji["Wrong"])
+                    return await Respond(ctx, HelpMessage, False, False)
+                elif File not in RawData:
+                    await ctx.message.add_reaction(Emoji["Wrong"])
+                    return await Respond(ctx, Payload1, False, False)
+                elif File in RawData:
+                    await ctx.message.add_reaction(Emoji["Right"])
+                    Payload2 = f"```Deleted: {File}```"
+                    os.remove("Data/" + File)
+                    await Respond(ctx, Payload2, False, False)
+
+            elif Function.lower() == "list":
+                await ctx.message.add_reaction(Emoji["Right"])
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(RawData)
+                Payload = f"```There are {DataLength} Files in the Data folder. Named as:\n{DataString}\n------```"
+
+                return await Respond(ctx, Payload, False, False)
+
+            elif Function.lower() == "link":
+                await ctx.message.add_reaction(Emoji["Right"])
+
+                RawData = os.listdir("Data")
+                DataLength = len(RawData)
+                DataString = "\n".join(
+                    [Host + File.replace(" ", "%20") for File in RawData]
+                )
+                Payload = f"There are {DataLength} Files in the Data folder. Here are the links:\n{DataString}\n------"
+
+                return await Respond(ctx, Payload, False, False)
+
+        except Exception as e:
+            Payload = f"Dash.Data(): {type(e).__name__}"
+            await ctx.message.add_reaction(Emoji["Wrong"])
+            return await Respond(ctx, Payload)
 
 
 def setup(Bot):

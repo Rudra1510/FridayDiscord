@@ -1,8 +1,11 @@
-from Imports import *
+import os
+import flask
+import threading
+from discord.ext import commands
 
 
 Bot = commands.Bot(command_prefix=".")
-App = Flask("")
+App = flask.Flask("")
 
 
 class WebServer:
@@ -13,7 +16,7 @@ class WebServer:
     @App.route("/<path:Path>")
     def File(Path):
         try:
-            return send_from_directory("Data", Path, as_attachment=True)
+            return flask.send_from_directory("Data", Path, as_attachment=True)
         except Exception as e:
             return f"<01000101><01010010><01010010><01001111><01010010> : {type(e).__name__}"
 
@@ -21,7 +24,7 @@ class WebServer:
         App.run(host="0.0.0.0", port=8080)
 
     def StayAwake():
-        Thread(target=WebServer.Run).start()
+        threading.Thread(target=WebServer.Run).start()
 
 
 for File in os.listdir("./Bot/Extension"):
