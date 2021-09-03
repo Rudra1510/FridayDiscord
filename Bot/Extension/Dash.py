@@ -1055,6 +1055,5 @@ class Dash(commands.Cog):
 
 
 def setup(bot):
-    pass
-    # bot.add_cog(Dash(bot))
-    # bot.add_cog(Message(bot))
+    bot.add_cog(Dash(bot))
+    bot.add_cog(Message(bot))
