@@ -134,7 +134,7 @@ class Management(commands.Cog):
                     await ctx.message.add_reaction(Emoji["Wrong"])
                     await Respond(ctx, Payload)
 
-    @commands.command()
+    @commands.command(aliases=["cover"])
     async def blank(self, ctx, Iteration=1):
         if not await Role(ctx):
             return
