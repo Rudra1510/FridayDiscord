@@ -15,7 +15,7 @@
             "name": "Bot",
             "type": "python",
             "request": "launch",
-            "program": "F:\\Python\\FridayDiscord\\Bot\\Main.py",
+            "program": "Bot/Main.py",
             "console": "integratedTerminal"
         }
     ]

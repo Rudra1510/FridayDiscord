@@ -236,7 +236,7 @@ class DashFunctions:
         StartTime = time.time()
 
         URLRE = re.search(r"https://allporncomic.com/porncomic/(.*)/(.*)/", Message)
-        if URLRE.group(2) != "":
+        if URLRE != None:
             URL = (
                 f"https://allporncomic.com/porncomic/{URLRE.group(1)}/{URLRE.group(2)}/"
             )
@@ -246,7 +246,8 @@ class DashFunctions:
             Wrapper = Soup.find("div", attrs={"class": "reading-content"})
             Images = [Image["data-src"].strip() for Image in Wrapper.find_all("img")]
             FileName = f"{URLRE.group(1).replace('-',' ').title()} - {URLRE.group(2).replace('-',' ').title()}.pdf"
-        elif URLRE.group(2) == "":
+        if URLRE == None:
+            URLRE = re.search(r"https://allporncomic.com/porncomic/(.*)/", Message)
             URL = f"https://allporncomic.com/porncomic/{URLRE.group(1)}/"
             Soup = bs4.BeautifulSoup(
                 requests.get(URL, headers=headers).content, "html.parser"
@@ -590,6 +591,72 @@ class Parser:
 
         return [Title, Pornstar, Links, Daftsex, Biqle, Images, Videos]
 
+    def GetModel(self, Model):
+        # Pre-data
+        Titles, Pornstars, Links, Daftsexs, Biqles, Images, Videos, Descriptions = (
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        )
+
+        Model = Model.lower().replace(" ", "-")
+
+        for Site in TeamSkeetSites:
+            URL = f"https://www.{Site}.com/models/{Model}"
+            Request = requests.get(url=URL, headers=headers)
+            Soup = bs4.BeautifulSoup(Request.content, "html.parser")
+
+            try:
+                MainDivision = Soup.find(
+                    "div", {"class": "newest-movies-container"}
+                ).find_all("div")[3]
+            except Exception as e:
+                continue
+
+            CurrentLinks = [
+                f"https://www.{Site}.com{Article['href']}"
+                for Article in MainDivision.find_all("a", {"class": ""})
+                if Article["title"] != ""
+            ]
+
+            for Link in CurrentLinks:
+                r = requests.get(url=Link, headers=headers)
+                s = bs4.BeautifulSoup(r.content, "html.parser")
+
+                Title = s.find("p", attrs={"class": "video-title"}).text.strip()
+                Titles.append(Title)
+                Pornstars.append(
+                    s.find("p", attrs={"class": "model-name"}).text.strip()
+                )
+                Links.append(Link)
+                Daftsexs.append(
+                    "https://daftsex.com/video/" + Title.replace(" ", "%20")
+                )
+                Biqles.append("https://biqle.com/video/" + Title.replace(" ", "%20"))
+                Images.append(s.find("stream")["poster"])
+                Videos.append(
+                    s.find("stream")["poster"].replace("big.jpg", "small.mp4")
+                )
+                Descriptions.append(
+                    s.find("p", attrs={"class": "video-description"}).text.strip()
+                )
+
+        return [
+            Titles,
+            Pornstars,
+            Links,
+            Daftsexs,
+            Biqles,
+            Images,
+            Videos,
+            Descriptions,
+        ]
+
 
 async def Inspect():
     Inspected = []
@@ -779,6 +846,14 @@ class Dash(commands.Cog):
         else:
             await ctx.message.add_reaction(Emoji["Right"])
             await self.Dash(ctx.author, Color, Data)
+
+    @commands.command()
+    async def find(self, ctx, *, Model):
+        Data = Parser().GetModel(Model)
+        if len(Data[0]) > 1:
+            await self.Dash(ctx, 000000, Data)
+        else:
+            return await Respond(ctx, f"No results found for: {Model.title()}")
 
     @commands.command()
     async def DB(self, ctx, Function=None, Key=None, Value=None):

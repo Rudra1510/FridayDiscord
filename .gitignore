@@ -133,3 +133,5 @@ dmypy.json
 geckodriver.log
 poetry.lock
 pyproject.toml
+
+VXN
