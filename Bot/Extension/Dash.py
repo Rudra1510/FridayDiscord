@@ -45,6 +45,9 @@ import time
 import json
 import random
 
+from PIL import Image
+import shutil
+
 # import img2pdf
 img2pdf = None
 import requests
@@ -269,9 +272,11 @@ class DashFunctions:
 
             FileName = f"{URLRE.group(1).replace('-',' ').title()}.pdf"
 
-        Data = [requests.get(Image).content for Image in Images]
-        with open(f"Data/{FileName}", "wb") as f:
-            f.write(img2pdf.convert(Data))
+        IMG2PDF(Images, FileName)
+
+        # Data = [requests.get(Image).content for Image in Images]
+        # with open(f"Data/{FileName}", "wb") as f:
+        #     f.write(img2pdf.convert(Data))
 
         TotalTime = round(time.time() - StartTime)
         Length = len(Images)
@@ -290,12 +295,13 @@ class DashFunctions:
         Wrapper = Soup.find_all("a", attrs={"itemprop": "contentUrl"})
         Title = Soup.find("h1").text.replace(" comic porn", "").strip().title()
         ImageLinks = [Var["href"] for Var in Wrapper]
-        Images = [requests.get(Image).content for Image in ImageLinks]
-        with open(f"Data/{Title}.pdf", "wb") as F:
-            F.write(img2pdf.convert(Images))
+        IMG2PDF(ImageLinks, Title)
+        # Images = [requests.get(Image).content for Image in ImageLinks]
+        # with open(f"Data/{Title}.pdf", "wb") as F:
+        #     F.write(img2pdf.convert(Images))
 
         TotalTime = round(time.time() - StartTime)
-        Length = len(Images)
+        Length = len(ImageLinks)
         Results = f"Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image."
 
         return f"{Title.replace(' ','%20')}.pdf\n{Results}"
@@ -329,13 +335,15 @@ class DashFunctions:
         )
         LinkTemplate = f"https://i.nhentai.net/galleries/{reCursor.group(1)}/%s.{reCursor.group(3)}"
         ImageLinks = [LinkTemplate % str(i) for i in range(1, Length + 1)]
-        ImageContents = [requests.get(ImageLink).content for ImageLink in ImageLinks]
+        # ImageContents = [requests.get(ImageLink).content for ImageLink in ImageLinks]
 
         FileName = f"{Title}.pdf"
-        if os.path.isfile(f"Data/{FileName}"):
-            os.remove(f"Data/{FileName}")
-        with open(f"Data/{FileName}", "wb") as F:
-            F.write(img2pdf.convert(ImageContents))
+        # if os.path.isfile(f"Data/{FileName}"):
+        #     os.remove(f"Data/{FileName}")
+        # with open(f"Data/{FileName}", "wb") as F:
+        #     F.write(img2pdf.convert(ImageContents))
+
+        IMG2PDF(ImageLinks, FileName)
 
         TotalTime = round(time.time() - StartTime)
         Results = f"Processed {Length} Images in {TotalTime} seconds. Rate: {round(TotalTime/Length)} seconds per Image."
@@ -712,6 +720,22 @@ def Get(Site, Number=1):
 
     except Exception as e:
         return f"{Site}: {type(e).__name__}"
+
+
+def IMG2PDF(Links: list, FileName: str) -> str:
+
+    if not os.path.isdir("Data/Temp"):
+        os.mkdir("Data/Temp")
+
+    Paths = [f"Data/Temp/{i.split('/')[-1]}" for i in Links]
+    for i in Links:
+        with open(f"Data/Temp/{i.split('/')[-1]}", "wb") as f:
+            f.write(requests.get(i).content)
+
+    Files = [Image.open(file) for file in Paths]
+    Files[0].save(f"Data/{FileName}.pdf", save_all=True, append_images=Files[1:])
+    shutil.rmtree("Data/Temp")
+    return f"{FileName}.pdf"
 
 
 # ---------------------------------------------------------------------------------------------------
