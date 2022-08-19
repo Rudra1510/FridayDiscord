@@ -11,5 +11,15 @@
     "files.exclude": {
         "**/__pycache__/**": true
     },
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "prettier.proseWrap": "never",
+    "html.format.wrapLineLength": 200,
+    "terminal.explorerKind": "external",
+    "testing.followRunningTest": false,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.terminal.launchArgs": [
+    
+    ],
+    "debug.terminal.clearBeforeReusing": true,
+    "terminal.integrated.scrollback": 1000
 }

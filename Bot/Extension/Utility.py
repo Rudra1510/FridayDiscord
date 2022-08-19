@@ -1,8 +1,12 @@
 import re
 import os
+import bs4
+import json
 import random
 import discord
 import requests
+import datetime
+import calendar
 import giphy_client
 import nest_asyncio
 import googlesearch
@@ -10,7 +14,10 @@ from discord.ext import commands
 from giphy_client.rest import ApiException
 from moviepy.editor import *
 
-import os
+from itertools import repeat
+
+from multiprocessing.pool import ThreadPool
+
 import time
 import youtube_dl
 import pyshorteners
@@ -25,7 +32,7 @@ class UtilityFunctions:
     def Shorten(self, Link):
         return pyshorteners.Shortener().tinyurl.short(Link)
 
-    def YouTube(self, Text):
+    async def YouTube(self, Text):
         AudioPref = {
             "outtmpl": "Data/%(title)s.%(ext)s",
             "format": "bestaudio/best",
@@ -322,6 +329,131 @@ class Utility(commands.Cog):
         finally:
             await Respond(ctx, Payload, False, True)
 
+    @commands.command(aliases=["horo", "libra"])
+    async def horoscope(self, ctx, Sign="Libra"):
+        def UpdateHoroscopes(FunctionRawData, FunctionData):
+            def GetFreshData(Now):
+                FreshData = {}
+                TargetClass = "product_group_carousel full_carousel_100"
+
+                URL = f"https://www.vogue.in/horoscope/collection/horoscope-today-{calendar.month_name[Now.month]}-{Now.day}-{Now.year}/"
+                Request = requests.get(URL, headers=headers)
+                Soup = bs4.BeautifulSoup(Request.content, "html.parser")
+
+                for i in Soup.find_all("div", attrs={"class": TargetClass}):
+                    for j in i.find_all(
+                        "div", attrs={"class": "product-block-full pc_full"}
+                    ):
+                        Sign = j.find("h2").text.split()[0].lower()
+                        Text = [k.text.strip() for k in j.find_all("p")]
+
+                        FreshData[Sign] = {}
+                        FreshData[Sign]["Horoscope"] = Text[0]
+                        FreshData[Sign]["CosmicTip"] = Text[1]
+
+                return FreshData
+
+            Now = datetime.datetime.now()
+            DateID = f"{str(Now.day).zfill(2)}.{str(Now.month).zfill(2)}.{Now.year}"
+
+            FunctionData[DateID] = {}
+            FunctionData[DateID] = GetFreshData(Now)
+
+            with open("Data/Data.json", "w") as f:
+                json.dump(FunctionRawData, f, indent=4)
+
+        await ctx.message.add_reaction(Emoji["Okay"])
+        Sign = Sign.lower()
+        Now = datetime.datetime.now()
+        DateID = f"{str(Now.day).zfill(2)}.{str(Now.month).zfill(2)}.{Now.year}"
+        with open("Data/Data.json", "r") as f:
+            RawData = json.loads(f.read())
+            Data = RawData["Horoscope"]
+
+        if Sign.lower() == "purge" and await Role(ctx):
+            for L_DATE in Data:
+                if L_DATE not in ["ZSigns", "ZImages"]:
+                    del Data[L_DATE]
+
+            await ctx.message.remove_reaction(Emoji["Okay"], self.Bot.user)
+            return await ctx.message.add_reaction(Emoji["Right"])
+
+        if DateID not in Data or Data[DateID] == {}:
+            try:
+                Payload = "Updating horoscope database. Please wait."
+                WaitMessage = await Respond(ctx, Payload, False, False)
+                UpdateHoroscopes(RawData, Data)
+                with open("Data/Data.json", "r") as f:
+                    RawData = json.loads(f.read())
+                    Data = RawData["Horoscope"]
+            except Exception as e:
+                await ctx.message.remove_reaction(Emoji["Okay"], self.Bot.user)
+                return await ctx.message.add_reaction(Emoji["Wrong"])
+            finally:
+                await WaitMessage.delete()
+
+        # Payload = f"{DateID}: Horoscope for {Sign.title()}.\n```{Data[DateID][Sign]['Horoscope']}```\n**{Data[DateID][Sign]['CosmicTip']}**"
+        Payload = f"> *{DateID}: Horoscope for {Sign.title()}.*\n```{Data[DateID][Sign]['Horoscope']}```\n**{Data[DateID][Sign]['CosmicTip']}**\n{Data['ZImages'][Sign.title()]}"
+
+        # Title = f"{DateID}: Horoscope for {Sign.title()}"
+        # Content = Data[DateID][Sign]["Horoscope"]
+        # Tip = Data[DateID][Sign]["CosmicTip"]
+
+        # Timestamp = datetime.datetime.now()
+        # Color = 0x03C5FF
+        # embed = discord.Embed(colour=Color, timestamp=Timestamp)
+        # embed.add_field(name=Title, value=Content, inline=True)
+        # embed.set_image(url=Data["ZImages"][Sign.title()])
+        # await ctx.message.remove_reaction(Emoji["Okay"], self.Bot.user)
+        # await ctx.message.add_reaction(Emoji["Right"])
+        # await Respond(ctx, embed, False, True, 0)
+        # return await Respond(ctx, f"**{Tip}**", True, False)
+        return await Respond(ctx, Payload, False, False, 0)
+
+    @commands.command()
+    async def define(self, ctx, *, Word=""):
+
+        await ctx.message.add_reaction(Emoji["Okay"])
+
+        try:
+            Base = "https://api.dictionaryapi.dev/api/v2/entries/en/" + Word.replace(
+                " ", "%20"
+            )
+            Request = requests.get(Base).json()[0]
+
+            await ctx.message.remove_reaction(Emoji["Okay"], self.Bot.user)
+            await ctx.message.add_reaction(Emoji["Right"])
+
+            RawMeaningList = [
+                _Data_["definition"] for _Data_ in Request["meanings"][0]["definitions"]
+            ]
+            MeaningList = [
+                _Data_["definition"] for _Data_ in Request["meanings"][0]["definitions"]
+            ][:3]
+            Data = {
+                "Word": Word.title(),
+                "RawMeaning": "; ".join(RawMeaningList),
+                "Meaning": "; ".join(MeaningList),
+                "Synonyms": ", ".join(
+                    list(
+                        set(
+                            [
+                                Synonym
+                                for _Data_ in Request["meanings"][0]["definitions"]
+                                for Synonym in _Data_["synonyms"]
+                            ]
+                        )
+                    )[:3]
+                ),
+            }
+            Payload = f"**{Word.title()}**\n**Meaning**: {Data['Meaning']}\n**Synonyms**: {Data['Synonyms']}"
+        except Exception as e:
+            await ctx.message.remove_reaction(Emoji["Okay"], self.Bot.user)
+            await ctx.message.add_reaction(Emoji["Wrong"])
+            Payload = f"Cannot find a meaning for the word **{Word.title()}**"
+
+        return await Respond(ctx, Payload, False, False, 0)
+
 
 class Information(commands.Cog):
     def __init__(self, Bot):
@@ -465,7 +597,7 @@ class Testing(commands.Cog):
             return await (ctx, IncorrectArgs + "\n**Start or Stop > Duration**")
 
         # If everything is perfect
-        FileName = UtilityFunctions().YouTube(URL + " vid").replace("%20", " ")
+        FileName = await UtilityFunctions().YouTube(URL + " vid").replace("%20", " ")
         TrimFileName = "Trim - " + FileName
         TrimFile = "Data/Trim - " + FileName
         File = "Data/" + FileName
@@ -492,7 +624,7 @@ class Message(commands.Cog):
 
         if "youtu" in message.content.lower():
             try:
-                File = UtilityFunctions().YouTube(message.content)
+                File = await UtilityFunctions().YouTube(message.content)
                 await message.author.send(f"{Host}{File}")
             except Exception as e:
                 Payload = f"Message.youtube(): {type(e).__name__}"
@@ -518,3 +650,5 @@ def setup(Bot):
     Bot.add_cog(Utility(Bot))
     Bot.add_cog(Information(Bot))
     Bot.add_cog(Message(Bot))
+
+

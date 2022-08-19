@@ -14,17 +14,19 @@ Whitelist = [529251441504681994, 858998113453080577]
 import asyncio
 
 
-async def Respond(Target, Payload, Send=False, Embed=False):
+async def Respond(
+    Target, Payload, Send=False, Embed=False, SecPerCharacter=0.01, *args, **kwargs
+):
     async with Target.typing():
-        await asyncio.sleep(round(len(Payload) * 0.01))
+        await asyncio.sleep(round(len(Payload) * SecPerCharacter))
     if Send:
         if Embed:
-            return await Target.send(embed=Payload)
-        return await Target.send(Payload)
-    elif Send == False:
+            return await Target.send(embed=Payload, *args, **kwargs)
+        return await Target.send(Payload, *args, **kwargs)
+    elif not Send:
         if Embed:
-            return await Target.reply(embed=Payload)
-        return await Target.reply(Payload)
+            return await Target.reply(embed=Payload, *args, **kwargs)
+        return await Target.reply(Payload, *args, **kwargs)
 
 
 async def Role(ctx):

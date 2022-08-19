@@ -148,7 +148,7 @@ class Management(commands.Cog):
             await ctx.message.add_reaction(Emoji["Wrong"])
         finally:
             if "Management.cover():" not in Payload:
-                for i in range(Iteration + 1):
+                for i in range(Iteration):
                     await Respond(ctx, Payload, True, False)
             else:
                 await Respond(ctx, Payload, True, False)

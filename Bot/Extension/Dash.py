@@ -1,43 +1,3 @@
-"""
-Data = {
-    "AbusiveInput": [
-        "chod",
-        "chut",
-        "lod",
-        "laud",
-        "bhos",
-        "love day",
-        "bosd",
-        "gand",
-        "ghant",
-        "gant",
-        "land",
-        "bp",
-        "xxx",
-        "sex",
-        "porn",
-        "ghap",
-        "gap",
-        "dofa",
-        "bol",
-        "rand",
-        "bob",
-        "boob",
-        "fuck",
-        "fcuk",
-    ],
-    "AbusiveOutput": [
-        "Fakir",
-        "C#0DU",
-        "B#0SD1N@",
-        "G@NDU",
-        "L0DU",
-        "T0P@",
-        "D@F0D",
-    ]}
-"""
-
-
 import os
 import re
 import bs4
@@ -56,6 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 
+from multiprocessing.pool import ThreadPool
+
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:55.0) Gecko/20100101 Firefox/55.0",
@@ -63,6 +25,7 @@ headers = {
 Cata = {
     "am": {"Base": "AnalMom", "Color": 15243988},
     "bb": {"Base": "BBCParadise", "Color": 16761856},
+    "bf": {"Base": "BFFs", "Color": 0xFF00B0},
     "bm": {"Base": "BadMilfs", "Color": 15679592},
     "dc": {"Base": "DadCrush", "Color": 16725631},
     "ds": {"Base": "DaughterSwap", "Color": 39385},
@@ -73,18 +36,21 @@ Cata = {
     "md": {"Base": "MYLFDOM", "Color": 16731942},
     "pm": {"Base": "PervMom", "Color": 13698310},
     "pn": {"Base": "PervNana", "Color": 13698310},
+    "pt": {"Base": "PervTherapy", "Color": 0x58BEA8},
     "sl": {"Base": "ShoplyfterMYLF", "Color": 14486850},
     "si": {"Base": "SisLovesMe", "Color": 15745132},
     "ss": {"Base": "SisSwap", "Color": 0xF456E9},
-    "tt": {"Base": "TeamSkeetTube", "Color": 636990},
-    "zz": {"Base": "Brazzers", "Color": 14725667},
-    "tr": {"Base": "TeamSkeetTubeRandom", "Color": 636990},
+    "tl": {"Base": "TeensLoveAnal", "Color": 0xDA3832},
+    # "tt": {"Base": "TeamSkeetTube", "Color": 636990},
+    # "zz": {"Base": "Brazzers", "Color": 14725667},
+    # "tr": {"Base": "TeamSkeetTubeRandom", "Color": 636990},
 }
 Uata = {
     "AnalMom": 15243988,
     "BBCParadise": 16761856,
+    "BFFs": 0xFF00B0,
     "BadMilfs": 15679592,
-    "Brazzers": 14725667,
+    # "Brazzers": 14725667,
     "DadCrush": 16725631,
     "DaughterSwap": 39385,
     "FamilyStrokes": 3830853,
@@ -94,15 +60,18 @@ Uata = {
     "MYLFDOM": 16731942,
     "PervMom": 13698310,
     "PervNana": 13698310,
+    "PervTherapy": 0x58BEA8,
     "ShoplyfterMYLF": 14486850,
     "SisLovesMe": 15745132,
     "SisSwap": 0xF456E9,
-    "TeamSkeetTube": 636990,
-    "TeamSkeetTubeRandom": 636990,
+    "TeensLoveAnal": 0xDA3832,
+    # "TeamSkeetTube": 636990,
+    # "TeamSkeetTubeRandom": 636990,
 }
 TeamSkeetSites = [
     "AnalMom",
     "BBCParadise",
+    "BFFs",
     "BadMilfs",
     "DadCrush",
     "DaughterSwap",
@@ -113,10 +82,12 @@ TeamSkeetSites = [
     "MYLFDOM",
     "PervMom",
     "PervNana",
+    "PervTherapy",
     "ShoplyfterMYLF",
     "SisLovesMe",
     "SisSwap",
-    "TeamSkeetTube",
+    "TeensLoveAnal",
+    # "TeamSkeetTube",
 ]
 ThresholdValues = [
     "Ass For Pass",
@@ -158,17 +129,19 @@ class DashFunctions:
         if "gyfcat.com" in URL:
             URL = URL.replace("gyfcat.com", "redgifs.com/watch")
 
-        op = webdriver.ChromeOptions()
-        op.add_argument("--no-sandbox")
-        op.add_argument("--disable-dev-shm-usage")
-        op.add_argument("--headless")
+        # op = webdriver.ChromeOptions()
+        # op.add_argument("--no-sandbox")
+        # op.add_argument("--disable-dev-shm-usage")
+        # op.add_argument("--headless")
 
-        with webdriver.Chrome(chrome_options=op) as Driver:
-            Driver.get(URL)
-            WebDriverWait(Driver, 10).until(
-                presence_of_element_located((By.TAG_NAME, "source"))
-            )
-            r = Driver.page_source
+        # with webdriver.Chrome(chrome_options=op) as Driver:
+        #     Driver.get(URL)
+        #     WebDriverWait(Driver, 10).until(
+        #         presence_of_element_located((By.TAG_NAME, "source"))
+        #     )
+        #     r = Driver.page_source
+
+        r = requests.get(url=URL, headers=headers).content
 
         Term = URL.split("/")[-1]
         soup = bs4.BeautifulSoup(r, "html.parser")
@@ -310,11 +283,9 @@ class DashFunctions:
         StartTime = time.time()
 
         URLRE = re.search(r"https://nhentai.net/g/(.*)/", Message)
-        URL = f"https://nhentai.net/g/{URLRE.group(1)}/"
+        URL = f"https://nhentai.net/g/{URLRE.group(1).split('/')[0]}/"
 
-        HomeSoup = bs4.BeautifulSoup(
-            requests.get(URL.split()[0]).content, "html.parser"
-        )
+        HomeSoup = bs4.BeautifulSoup(requests.get(url=URL,headers=headers).content, "html.parser")
         Section = HomeSoup.find("div", attrs={"id": "info"}).find("section")
         Length = [
             int(Division.find("span", attrs={"class": "name"}).text.strip())
@@ -329,20 +300,12 @@ class DashFunctions:
             .find("a")
             .find("img")["src"]
         )
-
         reCursor = re.match(
-            r"https://i.nhentai.net/galleries/(.*)/(\d).(.*)", ImageLinkRaw
+            r"https://(.*).nhentai.net/galleries/(.*)/(\d).(.*)", ImageLinkRaw
         )
-        LinkTemplate = f"https://i.nhentai.net/galleries/{reCursor.group(1)}/%s.{reCursor.group(3)}"
+        LinkTemplate = f"https://{reCursor.group(1)}.nhentai.net/galleries/{reCursor.group(2)}/%s.{reCursor.group(4)}"
         ImageLinks = [LinkTemplate % str(i) for i in range(1, Length + 1)]
-        # ImageContents = [requests.get(ImageLink).content for ImageLink in ImageLinks]
-
         FileName = f"{Title}.pdf"
-        # if os.path.isfile(f"Data/{FileName}"):
-        #     os.remove(f"Data/{FileName}")
-        # with open(f"Data/{FileName}", "wb") as F:
-        #     F.write(img2pdf.convert(ImageContents))
-
         IMG2PDF(ImageLinks, FileName)
 
         TotalTime = round(time.time() - StartTime)
@@ -354,7 +317,7 @@ class Database:
     def __init__(self):
         self.File = "Data/Data.json"
         with open(self.File, "r") as f:
-            self.Data = json.loads(f.read())
+            self.Data = json.loads(f.read())["Dash"]
 
     def Pull(self, Key):
         return self.Data[Key]
@@ -650,9 +613,13 @@ class Parser:
                 Videos.append(
                     s.find("stream")["poster"].replace("big.jpg", "small.mp4")
                 )
-                Descriptions.append(
-                    s.find("p", attrs={"class": "video-description"}).text.strip()
-                )
+
+                Description = s.find(
+                    "p", attrs={"class": "video-description"}
+                ).text.strip()
+                if len(Description) > 1024:
+                    Description = Description[:1021] + "..."
+                Descriptions.append(Description)
 
         return [
             Titles,
@@ -723,15 +690,17 @@ def Get(Site, Number=1):
 
 
 def IMG2PDF(Links: list, FileName: str) -> str:
-
     if not os.path.isdir("Data/Temp"):
         os.mkdir("Data/Temp")
-
     Paths = [f"Data/Temp/{i.split('/')[-1]}" for i in Links]
-    for i in Links:
-        with open(f"Data/Temp/{i.split('/')[-1]}", "wb") as f:
-            f.write(requests.get(i).content)
 
+    def Download(Link):
+        with open(f"Data/Temp/{Link.split('/')[-1]}", "wb") as f:
+            f.write(requests.get(Link).content)
+
+    Thread = ThreadPool(25).imap_unordered(Download, Links)
+    for i in Thread:
+        pass
     Files = [Image.open(file) for file in Paths]
     Files[0].save(f"Data/{FileName}.pdf", save_all=True, append_images=Files[1:])
     shutil.rmtree("Data/Temp")
@@ -873,10 +842,17 @@ class Dash(commands.Cog):
 
     @commands.command()
     async def find(self, ctx, *, Model):
+        await ctx.message.add_reaction(Emoji["Okay"])
         Data = Parser().GetModel(Model)
         if len(Data[0]) > 1:
+            await ctx.message.add_reaction(Emoji["Right"])
             await self.Dash(ctx, 000000, Data)
+            await Respond(
+                ctx,
+                f"Returned {len(Data[0])} results for {Model.title()}",
+            )
         else:
+            await ctx.message.add_reaction(Emoji["Wrong"])
             return await Respond(ctx, f"No results found for: {Model.title()}")
 
     @commands.command()
@@ -1027,6 +1003,13 @@ class Dash(commands.Cog):
             await ctx.message.add_reaction(Emoji["Wrong"])
             Payload = f"Dash.loop(): {type(e).__name__}"
             return await Respond(ctx, Payload)
+
+    @tasks.loop(hours=6, reconnect=False)
+    async def HoroscopeLoop(self):
+        Admin = await self.bot.fetch_user(529251441504681994)
+        Logs = self.bot.get_channel(843016447839567912)
+
+        
 
     @tasks.loop(hours=1, reconnect=False)
     async def Update(self):
